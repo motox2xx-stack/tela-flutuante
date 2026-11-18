@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guardian Shield — Menu Principal</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; border: none; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+        body { background: #0F172A; min-height: 100vh; overflow: hidden; color: #FFFFFF; }
+
+        /* === MENU DE NAVEGAÇÃO === */
+        nav {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.25);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            position: relative;
+            z-index: 999;
+        }
+        .menu-btn {
+            padding: 8px 14px;
+            border-radius: 6px;
+            background: transparent;
+            border: none;
+            color: #CBD5E1;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: all 0.2s ease;
+        }
+        .menu-btn.ativo {
+            background: rgba(59, 130, 246, 0.25);
+            color: #60A5FA;
+        }
+        .menu-btn:hover {
+            background: rgba(255, 255, 255, 0.06);
+        }
+
+        /* === ÁREA DAS PÁGINAS === */
+        main {
+            padding: 0;
+            height: calc(100vh - 56px);
+            overflow-y: auto;
+        }
+        section {
+            display: none;
+            padding: 20px;
+        }
+        section#pag-inicio {
+            display: block;
+        }
+        h2 {
+            font-size: 1.1rem;
+            margin-bottom: 20px;
+            color: #FFFFFF;
+        }
+        input, select {
+            width: 100%;
+            padding: 9px 12px;
+            border-radius: 6px;
+            background: rgba(255, 255, 255, 0.05);
+            border: none;
+            color: #FFFFFF;
+            font-size: 0.85rem;
+            outline: none;
+        }
+        label {
+            font-size: 0.8rem;
+            opacity: 0.7;
+            display: block;
+            margin-bottom: 5px;
+        }
+        button {
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.2s ease;
+        }
+
+        /* === TELA DE CHAMADA ENTRANTE === */
+        .tela-chamada-entrante {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.8);
+            background: rgba(15, 23, 42, 0.92);
+            backdrop-filter: blur(24px);
+            border-radius: 20px;
+            padding: 32px 40px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+            border: 1px solid rgba(255,255,255,0.1);
+            z-index: 10000;
+            text-align: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .tela-chamada-entrante.ativo {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1);
+            visibility: visible;
+        }
+    </style>
+</head>
+<body>
+
+<!-- 🧭 MENU PRINCIPAL -->
+<nav>
+    <button class="menu-btn ativo" data-pagina="inicio">🏠 Início</button>
+    <button class="menu-btn" data-pagina="sala">📞 Sala de Chamada</button>
+    <button class="menu-btn" data-pagina="contatos">👥 Contatos</button>
+    <button class="menu-btn" data-pagina="perfil">👤 Perfil</button>
+    <button class="menu-btn" data-pagina="suporte">❓ Suporte</button>
+</nav>
+
+<!-- 📄 ÁREA DAS PÁGINAS -->
+<main id="paginas">
+
+    <!-- 🏠 PÁGINA INÍCIO -->
+    <section id="pag-inicio">
+        <div class="tela-chamada-entrante" id="telaFlutuante">
+            <h2 style="margin-bottom:15px;">📞 Chamada</h2>
+            <p style="opacity:0.7; font-size:0.9rem;">Conectando...</p>
+            <button style="margin-top:20px; padding:8px 20px; background:#22C55E; color:white;" onclick="fecharTelinha()">Fechar</button>
+        </div>
+    </section>
+
+    <!-- 📞 PÁGINA SALA DE CHAMADA -->
+    <section id="pag-sala">
+        <h2>📞 Sala de Chamada</h2>
+        <div style="text-align:center; padding:30px;">
+            <button id="btnLigar" style="
+                width:130px; height:130px; border-radius:50%;
+                background:linear-gradient(145deg, #22c55e, #16a34a);
+                border:none; color:white; font-size:42px; cursor:pointer;
+                box-shadow:0 4px 15px rgba(34, 197, 94, 0.3);">📞</button>
+            <p style="margin-top:15px; font-size:0.85rem; opacity:0.7;">Clique para conectar</p>
+        </div>
+        <div id="statusConexao" style="
+            margin-top:10px; padding:12px; border-radius:6px; text-align:center;
+            background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08);
+            font-size:0.8rem; opacity:0.7;">
+            ⏳ Pronto para conectar
+        </div>
+        <p style="margin-top:12px; font-size:0.8rem; opacity:0.6;">
+            💡 Quer usar a chamada completa com vídeo e áudio?
+            <a href="sala-p2p.html" style="color:#60A5FA; text-decoration:none;">Abrir Sala P2P →</a>
+        </p>
+    </section>
+
+    <!-- 👥 PÁGINA CONTATOS -->
+    <section id="pag-contatos">
+        <h2>👥 Meus Contatos</h2>
+        <input type="text" placeholder="Buscar contato..." id="buscaContatos">
+        <div id="listaContatos" style="margin-top:15px;">
+            <p style="opacity:0.4; font-size:0.85rem; text-align:center; padding:20px;">Nenhum contato ainda</p>
+        </div>
+    </section>
+
+    <!-- 👤 PÁGINA PERFIL -->
+    <section id="pag-perfil">
+        <h2>👤 Meu Perfil</h2>
+        <div style="margin-bottom:15px;">
+            <label for="meuNomePerfil">Seu Nome</label>
+            <input type="text" id="meuNomePerfil" placeholder="Digite seu nome...">
+        </div>
+        <div style="margin-bottom:20px;">
+            <label for="meuStatus">Status</label>
+            <select id="meuStatus">
+                <option value="disponivel">🟢 Disponível</option>
+                <option value="ocupado">🟡 Ocupado</option>
+                <option value="ausente">⚪ Ausente</option>
+            </select>
+        </div>
+        <button id="salvarPerfil" style="padding:9px 18px; background:#3b82f6; color:white;">Salvar Alterações</button>
+    </section>
+
+    <!-- ❓ PÁGINA SUPORTE -->
+    <section id="pag-suporte">
+        <h2>❓ Suporte</h2>
+        <div style="font-size:0.85rem; line-height:1.7; opacity:0.8;">
+            <p><strong>📞 Para conectar:</strong> Abra em outra aba e clique em Ligar nos dois.</p>
+            <p><strong>💬 Para conversar:</strong> A telinha abre quando conectado. Digite e envie normalmente.</p>
+            <p><strong>📸 Arquivos e fotos:</strong> Disponíveis durante a chamada na telinha flutuante.</p>
+            <p style="margin-top:20px; opacity:0.4;">Versão 1.0 — P2P Local</p>
+        </div>
+    </section>
+</main>
+
+<script>
+// === 🧭 NAVEGAÇÃO DO MENU ===
+const botoesMenu = document.querySelectorAll('.menu-btn');
+
+botoesMenu.forEach(btn => {
+    btn.addEventListener('click', () => {
+        botoesMenu.forEach(b => b.classList.remove('ativo'));
+        btn.classList.add('ativo');
+        document.querySelectorAll('#paginas > section').forEach(p => p.style.display = 'none');
+        document.getElementById(`pag-${btn.dataset.pagina}`).style.display = 'block';
+    });
+});
+
+// === 👤 SALVAR PERFIL ===
+const nomePerfil = document.getElementById('meuNomePerfil');
+const statusPerfil = document.getElementById('meuStatus');
+const salvarPerfil = document.getElementById('salvarPerfil');
+
+nomePerfil.value = localStorage.getItem('meuNome') || '';
+statusPerfil.value = localStorage.getItem('meuStatus') || 'disponivel';
+
+salvarPerfil.addEventListener('click', () => {
+    localStorage.setItem('meuNome', nomePerfil.value);
+    localStorage.setItem('meuStatus', statusPerfil.value);
+    salvarPerfil.textContent = '✓ Salvo!';
+    setTimeout(() => salvarPerfil.textContent = 'Salvar Alterações', 1500);
+});
+
+// === 📞 BOTÃO LIGAR + ABRIR TELINHA ===
+const btnLigar = document.getElementById('btnLigar');
+const statusConexao = document.getElementById('statusConexao');
+const telaFlutuante = document.getElementById('telaFlutuante');
+
+btnLigar.addEventListener('click', () => {
+    statusConexao.textContent = '🔄 Conectando...';
+    btnLigar.style.pointerEvents = 'none';
+    
+    setTimeout(() => {
+        statusConexao.textContent = '✅ Conectado! Abrindo conversa...';
+        btnLigar.style.background = 'linear-gradient(145deg, #3b82f6, #2563eb)';
+        btnLigar.textContent = '✓';
+        
+        setTimeout(() => {
+            document.querySelector('[data-pagina="inicio"]').click();
+            telaFlutuante.classList.add('ativo');
+        }, 800);
+    }, 1500);
+});
+
+function fecharTelinha() {
+    telaFlutuante.classList.remove('ativo');
+    statusConexao.textContent = '⏳ Pronto para conectar';
+    btnLigar.style.background = 'linear-gradient(145deg, #22c55e, #16a34a)';
+    btnLigar.textContent = '📞';
+    btnLigar.style.pointerEvents = 'auto';
+}
+</script>
+
+</body>
+</html>
