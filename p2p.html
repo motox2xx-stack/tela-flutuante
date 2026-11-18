@@ -1,0 +1,887 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>P2P — Texto + Foto + Áudio + Tela + Webcam</title>
+    <script src="https://cdn.jsdelivr.net/npm/peerjs@1.5.4/dist/peerjs.min.js"></script>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; }
+        body {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            color: white;
+            min-height: 100vh;
+            padding: 2rem;
+            max-width: 480px;
+            margin: 0 auto;
+        }
+        h1 { text-align: center; margin-bottom: 2rem; font-size: 1.3rem; }
+        .escondido { display: none !important; }
+        .caixa {
+            background: rgba(30, 41, 59, 0.8);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            border: 1px solid rgba(148, 163, 184, 0.2);
+        }
+        label { display: block; margin-bottom: 0.5rem; font-size: 0.9rem; color: #cbd5e1; }
+        input, button {
+            width: 100%;
+            padding: 0.75rem;
+            border-radius: 8px;
+            border: none;
+            font-size: 1rem;
+            margin-bottom: 0.75rem;
+        }
+        button {
+            background: #2563eb;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        button:hover { background: #1d4ed8; }
+        button:disabled { background: #475569; cursor: not-allowed; opacity: 0.6; }
+        button.vermelho { background: #dc2626; }
+        button.vermelho:hover { background: #b91c1c; }
+        button.ativo { background: #16a34a; }
+        button.ativo:hover { background: #15803d; }
+        :focus-visible { outline: 2px solid #93c5fd; outline-offset: 2px; }
+        .status {
+            padding: 0.75rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+        }
+        .status.conectando { background: rgba(234, 179, 8, 0.2); color: #fde047; }
+        .status.conectado { background: rgba(22, 163, 74, 0.2); color: #86efac; }
+        .status.erro { background: rgba(220, 38, 38, 0.2); color: #fca5a5; }
+        .status.info { background: rgba(37, 99, 235, 0.2); color: #93c5fd; }
+        .mensagens {
+            height: 250px;
+            overflow-y: auto;
+            margin-bottom: 1rem;
+            background: #0f172a;
+            border-radius: 8px;
+            padding: 10px;
+        }
+        .mensagem {
+            padding: 0.75rem;
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+            max-width: 85%;
+            word-wrap: break-word;
+            overflow-wrap: anywhere;
+        }
+        .mensagem.eu { background: #2563eb; margin-left: auto; }
+        .mensagem.outro { background: #334155; margin-right: auto; }
+        .mensagem.sistema {
+            background: transparent;
+            color: #94a3b8;
+            font-size: 0.8rem;
+            text-align: center;
+            margin: 0 auto 0.5rem;
+            max-width: 100%;
+            padding: 0.25rem;
+        }
+        .mensagem .hora { font-size: 0.7rem; opacity: 0.6; margin-top: 0.25rem; text-align: right; }
+        .mensagem-foto { max-width: 100%; border-radius: 8px; margin-top: 0.5rem; display: block; }
+        .linha { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+        .linha button { flex: 1; min-width: 90px; }
+        .copiar {
+            background: #475569;
+            font-size: 0.8rem;
+            padding: 0.4rem 0.6rem;
+            width: auto;
+        }
+        .id-exibido {
+            background: #1e293b;
+            padding: 0.6rem;
+            border-radius: 6px;
+            margin-bottom: 0.75rem;
+            font-family: monospace;
+            font-size: 0.85rem;
+            word-break: break-all;
+        }
+        .dica { font-size: 0.8rem; color: #94a3b8; text-align: center; margin-top: 1rem; }
+        video { width: 100%; border-radius: 8px; margin: 0.5rem 0; background: #000; max-height: 220px; object-fit: contain; }
+
+        /* --- Webcam ao vivo --- */
+        #videoLocal {
+            width: 100%;
+            border-radius: 8px;
+            margin: 0.5rem 0;
+            background: #000;
+            transform: scaleX(-1);
+            max-height: 180px;
+            object-fit: contain;
+        }
+        #videoLocal.trava-tras {
+            transform: none;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔗 P2P — Texto + Foto + Áudio + Tela + Webcam</h1>
+    <div style="margin-bottom: 1.5rem;">
+        <a href="principal.html" style="color:#60A5FA; text-decoration:none; font-size:0.9rem;">← Voltar ao Menu Principal</a>
+    </div>
+
+
+
+    <!-- Tela inicial -->
+    <div id="tela-inicial" class="caixa">
+        <label>Seu ID:</label>
+        <div class="id-exibido" id="meuId">Gerando ID...</div>
+        <button class="copiar" id="btnCopiar" type="button">📋 Copiar meu ID</button>
+
+        <label for="idParceiro" style="margin-top: 12px;">Cole o ID do outro lado aqui:</label>
+        <input type="text" id="idParceiro" placeholder="Cole o ID aqui..." autocomplete="off">
+        <button id="btnConectar" type="button" disabled>🔗 Conectar</button>
+
+        <div id="status" class="status info" role="status">Iniciando...</div>
+        <p class="dica">💡 Abra em DUAS janelas (ou dois aparelhos). Troquem os IDs e conectem!</p>
+    </div>
+
+    <!-- Tela de chat -->
+    <div id="tela-chat" class="caixa escondido">
+        <div class="linha" style="margin-bottom: 12px;">
+            <input type="file" id="arquivoFoto" accept="image/png,image/jpeg,image/gif,image/webp" class="escondido">
+            <button type="button" id="btnFoto">📷 Foto</button>
+            <button type="button" id="btnAudio">🎤 Áudio</button>
+            <button type="button" id="btnTela">🖥️ Tela</button>
+            <button type="button" id="btnToggleWebcam">📹 Câmera</button>
+            <button type="button" id="btnSair" class="vermelho">🚪 Sair</button>
+        </div>
+
+        <div id="progressoFoto" class="status info escondido">Enviando imagem...</div>
+
+        <!-- 📹 Área da Webcam -->
+        <div id="areaWebcam" class="caixa escondido" style="background: rgba(15, 23, 42, 0.6); padding: 1rem;">
+            <h3 style="text-align:center; margin-bottom:0.5rem; font-size: 1rem;">📷 Câmera ao Vivo</h3>
+            <div style="display:flex; gap:0.5rem; margin:0.75rem 0; flex-wrap:wrap">
+                <button type="button" id="btnWebcamFrente" onclick="ligarWebcam('user')">📷 Frente</button>
+                <button type="button" id="btnWebcamTras" onclick="ligarWebcam('environment')" class="escondido">📷 Trás</button>
+                <button type="button" onclick="desligarWebcam()" class="vermelho">⏹️ Desligar</button>
+            </div>
+            <div id="statusWebcam" class="status info">Clique em "Frente" ou "Trás" para ligar a câmera</div>
+            <video id="videoLocal" autoplay playsinline muted class="escondido"></video>
+        </div>
+
+        <!-- Vídeo remoto (Recebimento de Tela ou Webcam) -->
+        <video id="videoRemoto" autoplay playsinline class="escondido"></video>
+
+        <div id="mensagens" class="mensagens" aria-live="polite"></div>
+
+        <div style="display: flex; gap: 8px;">
+            <input type="text" id="mensagemTexto" placeholder="Digite sua mensagem..." maxlength="2000" autocomplete="off" style="margin-bottom:0;">
+            <button type="button" id="btnEnviar" style="width: auto; padding: 0.75rem 1.2rem; margin-bottom:0;" aria-label="Enviar">➤</button>
+        </div>
+
+        <audio id="audioRemoto" autoplay playsinline class="escondido"></audio>
+    </div>
+
+<script>
+'use strict';
+
+const $ = (id) => document.getElementById(id);
+const meuIdEl = $('meuId');
+const idParceiroEl = $('idParceiro');
+const btnConectar = $('btnConectar');
+const btnCopiar = $('btnCopiar');
+const statusEl = $('status');
+const telaInicial = $('tela-inicial');
+const telaChat = $('tela-chat');
+const mensagensEl = $('mensagens');
+const mensagemTextoEl = $('mensagemTexto');
+const arquivoFotoEl = $('arquivoFoto');
+const progressoFotoEl = $('progressoFoto');
+const audioRemotoEl = $('audioRemoto');
+const videoRemotoEl = $('videoRemoto');
+const btnAudio = $('btnAudio');
+const btnTela = $('btnTela');
+const btnToggleWebcam = $('btnToggleWebcam');
+const areaWebcam = $('areaWebcam');
+
+const MAX_FOTO = 5 * 1024 * 1024;
+const MAX_TEXTO = 2000;
+const TIPOS_FOTO = ['image/png', 'image/jpeg', 'image/gif', 'image/webp'];
+
+let peer = null;
+let peerPronto = false;
+
+// Conexão de dados
+let conexao = null;
+let tentativa = null;
+let tentativaTimer = null;
+let conectado = false;
+
+// Áudio: 'parado' | 'pedindo' | 'aguardando' | 'ativo'
+let audioEstado = 'parado';
+let audioTimer = null;
+let chamadaAudio = null;
+let streamLocalAudio = null;
+
+// Tela
+let chamadaTelaEnviada = null;
+let streamLocalTela = null;
+let chamadaTelaRecebida = null;
+
+// Webcam ao vivo
+let streamLocalWebcam = null;
+let chamadaWebcam = null;
+
+// Detecta se é celular para mostrar botão de câmera de trás
+window.addEventListener('load', function() {
+    const ehCelular = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+    if (ehCelular) {
+        const btn = $('btnWebcamTras');
+        if (btn) btn.classList.remove('escondido');
+    }
+});
+
+/* ---------- Utilidades ---------- */
+
+function atualizarStatus(texto, tipo) {
+    statusEl.textContent = texto;
+    statusEl.className = 'status ' + tipo;
+}
+
+function horaAtual() {
+    const d = new Date();
+    return d.getHours().toString().padStart(2, '0') + ':' + d.getMinutes().toString().padStart(2, '0');
+}
+
+function criarBolha(quem, classe) {
+    const div = document.createElement('div');
+    div.className = 'mensagem ' + classe;
+    const strong = document.createElement('strong');
+    strong.textContent = quem;
+    div.appendChild(strong);
+    div.appendChild(document.createElement('br'));
+    return div;
+}
+
+function finalizarBolha(div) {
+    const h = document.createElement('div');
+    h.className = 'hora';
+    h.textContent = horaAtual();
+    div.appendChild(h);
+    mensagensEl.appendChild(div);
+    mensagensEl.scrollTop = mensagensEl.scrollHeight;
+}
+
+function adicionarMensagem(quem, texto) {
+    const div = criarBolha(quem, quem === 'Você' ? 'eu' : 'outro');
+    const span = document.createElement('span');
+    span.textContent = texto;
+    div.appendChild(span);
+    finalizarBolha(div);
+}
+
+function adicionarFoto(quem, url) {
+    const div = criarBolha(quem, quem === 'Você' ? 'eu' : 'outro');
+    const img = document.createElement('img');
+    img.src = url;
+    img.className = 'mensagem-foto';
+    img.alt = 'Foto enviada por ' + quem;
+    div.appendChild(img);
+    finalizarBolha(div);
+}
+
+function avisoSistema(texto) {
+    const div = document.createElement('div');
+    div.className = 'mensagem sistema';
+    div.textContent = texto;
+    mensagensEl.appendChild(div);
+    mensagensEl.scrollTop = mensagensEl.scrollHeight;
+}
+
+function enviar(obj) {
+    if (conexao && conexao.open) {
+        try { conexao.send(obj); return true; } catch (e) { console.error(e); }
+    }
+    return false;
+}
+
+/* ---------- Peer / sinalização ---------- */
+
+function inicializarPeer() {
+    peer = new Peer();
+
+    peer.on('open', (id) => {
+        peerPronto = true;
+        meuIdEl.textContent = id;
+        btnConectar.disabled = !!tentativa;
+        if (!conectado && !tentativa) {
+            atualizarStatus('Pronto! Copie seu ID e compartilhe com o outro lado.', 'info');
+        }
+    });
+
+    peer.on('connection', (conn) => {
+        if (conexao || conectado) {
+            conn.on('open', () => conn.close());
+            return;
+        }
+        configurarConexao(conn);
+    });
+
+    peer.on('call', receberChamada);
+
+    peer.on('disconnected', () => {
+        if (peer && !peer.destroyed) peer.reconnect();
+    });
+
+    peer.on('error', (err) => {
+        console.error('Erro PeerJS:', err);
+        if (err.type === 'peer-unavailable') {
+            falhaTentativa('ID não encontrado. Confira se o outro lado está com a página aberta.');
+        } else if (['unavailable-id', 'server-error', 'network', 'socket-error', 'socket-closed'].includes(err.type)) {
+            atualizarStatus('Problema de rede com o servidor (' + err.type + '). Tentando reconectar...', 'erro');
+        } else {
+            atualizarStatus('Erro: ' + err.type, 'erro');
+        }
+    });
+}
+
+async function copiarId() {
+    const id = meuIdEl.textContent;
+    try {
+        await navigator.clipboard.writeText(id);
+        atualizarStatus('ID copiado! ✅', 'info');
+    } catch (e) {
+        window.prompt('Copie o ID abaixo:', id);
+    }
+}
+
+/* ---------- Conexão de dados ---------- */
+
+function limparTentativa() {
+    clearTimeout(tentativaTimer);
+    tentativa = null;
+    btnConectar.disabled = !peerPronto;
+}
+
+function falhaTentativa(msg) {
+    if (!tentativa) {
+        atualizarStatus(msg, 'erro');
+        return;
+    }
+    const t = tentativa;
+    limparTentativa();
+    try { t.close(); } catch (e) {}
+    atualizarStatus(msg, 'erro');
+}
+
+function iniciarConexao() {
+    if (!peerPronto || tentativa || conexao) return;
+    const idParceiro = idParceiroEl.value.trim();
+    if (!idParceiro) {
+        atualizarStatus('Cole o ID do outro lado primeiro.', 'erro');
+        return;
+    }
+    if (idParceiro === peer.id) {
+        atualizarStatus('Você não pode conectar com seu próprio ID.', 'erro');
+        return;
+    }
+    atualizarStatus('Conectando...', 'conectando');
+    btnConectar.disabled = true;
+
+    const conn = peer.connect(idParceiro, { reliable: true });
+    tentativa = conn;
+    tentativaTimer = setTimeout(() => {
+        if (tentativa === conn) falhaTentativa('Tempo esgotado. O outro lado não respondeu.');
+    }, 15000);
+    configurarConexao(conn);
+}
+
+function configurarConexao(conn) {
+    conn.on('open', () => {
+        if (conexao && conexao !== conn) {
+            conn.close();
+            return;
+        }
+        conexao = conn;
+        conectado = true;
+        if (tentativa === conn) limparTentativa();
+        atualizarStatus('✅ Conectado!', 'conectado');
+        mostrarTelaChat();
+        avisoSistema('Conexão estabelecida.');
+    });
+
+    conn.on('data', (dados) => {
+        if (conn !== conexao) return;
+        receberDados(dados);
+    });
+
+    conn.on('close', () => {
+        if (conn === tentativa) {
+            falhaTentativa('A conexão foi encerrada antes de abrir.');
+            return;
+        }
+        if (conn !== conexao) return;
+        voltarTelaInicial('O outro lado desconectou.');
+    });
+
+    conn.on('error', (err) => {
+        console.error('Erro na conexão:', err);
+        if (conn === tentativa) falhaTentativa('Erro na conexão: ' + (err.type || err));
+        else if (conn === conexao) atualizarStatus('Erro na conexão: ' + (err.type || err), 'erro');
+    });
+}
+
+function mostrarTelaChat() {
+    telaInicial.classList.add('escondido');
+    telaChat.classList.remove('escondido');
+    mensagemTextoEl.focus();
+}
+
+function voltarTelaInicial(motivo) {
+    conectado = false;
+    conexao = null;
+    pararMidia();
+    desligarWebcam();
+    areaWebcam.classList.add('escondido');
+    telaInicial.classList.remove('escondido');
+    telaChat.classList.add('escondido');
+    mensagensEl.innerHTML = '';
+    atualizarStatus((motivo ? motivo + ' ' : '') + 'Pronto para nova conexão.', 'info');
+    btnConectar.disabled = !peerPronto;
+}
+
+function desconectar() {
+    const c = conexao;
+    conexao = null;
+    if (c) { try { c.close(); } catch (e) {} }
+    voltarTelaInicial('Você saiu.');
+}
+
+/* ---------- Texto e fotos ---------- */
+
+function enviarMensagem() {
+    const texto = mensagemTextoEl.value.trim();
+    if (!texto || !conectado) return;
+    if (enviar({ tipo: 'texto', conteudo: texto.slice(0, MAX_TEXTO) })) {
+        adicionarMensagem('Você', texto.slice(0, MAX_TEXTO));
+        mensagemTextoEl.value = '';
+    } else {
+        avisoSistema('Não foi possível enviar a mensagem.');
+    }
+}
+
+arquivoFotoEl.addEventListener('change', async (e) => {
+    const arquivo = e.target.files[0];
+    arquivoFotoEl.value = '';
+    if (!arquivo || !conectado) return;
+
+    if (!TIPOS_FOTO.includes(arquivo.type)) {
+        alert('Formato não suportado. Use PNG, JPEG, GIF ou WebP.');
+        return;
+    }
+    if (arquivo.size > MAX_FOTO) {
+        alert('Imagem muito grande! O limite é de 5 MB.');
+        return;
+    }
+
+    progressoFotoEl.classList.remove('escondido');
+    try {
+        const buffer = await arquivo.arrayBuffer();
+        if (enviar({ tipo: 'foto', mime: arquivo.type, conteudo: buffer })) {
+            adicionarFoto('Você', URL.createObjectURL(arquivo));
+        } else {
+            avisoSistema('Não foi possível enviar a foto.');
+        }
+    } catch (err) {
+        alert('Erro ao ler a imagem: ' + err.message);
+    } finally {
+        progressoFotoEl.classList.add('escondido');
+    }
+});
+
+function receberDados(dados) {
+    if (!dados || typeof dados !== 'object') return;
+
+    switch (dados.tipo) {
+        case 'texto':
+            if (typeof dados.conteudo === 'string') {
+                adicionarMensagem('Outro', dados.conteudo.slice(0, MAX_TEXTO));
+            }
+            break;
+
+        case 'foto': {
+            const buf = dados.conteudo;
+            const tamanho = buf && (buf.byteLength || buf.length);
+            if (!TIPOS_FOTO.includes(dados.mime) || !tamanho || tamanho > MAX_FOTO) return;
+            const blob = new Blob([buf], { type: dados.mime });
+            adicionarFoto('Outro', URL.createObjectURL(blob));
+            break;
+        }
+
+        case 'audio-pedido': tratarPedidoAudio(); break;
+        case 'audio-aceito': tratarAudioAceito(); break;
+        case 'audio-recusado':
+            if (audioEstado === 'pedindo') {
+                encerrarAudio(false);
+                avisoSistema('O outro lado recusou a chamada de áudio.');
+            }
+            break;
+        case 'audio-fim':
+            if (audioEstado !== 'parado') {
+                encerrarAudio(false);
+                avisoSistema('Chamada de áudio encerrada pelo outro lado.');
+            }
+            break;
+
+        case 'tela-fim':
+            limparTelaRecebida();
+            break;
+    }
+}
+
+/* ---------- Áudio (negociado pelo canal de dados) ---------- */
+
+function atualizarBotaoAudio() {
+    if (audioEstado === 'parado') {
+        btnAudio.textContent = '🎤 Áudio';
+        btnAudio.classList.remove('ativo');
+    } else if (audioEstado === 'ativo') {
+        btnAudio.textContent = '🔇 Desligar áudio';
+        btnAudio.classList.add('ativo');
+    } else {
+        btnAudio.textContent = '📞 Chamando... (cancelar)';
+        btnAudio.classList.remove('ativo');
+    }
+}
+
+function encerrarAudio(avisar) {
+    clearTimeout(audioTimer);
+    if (avisar && conectado && audioEstado !== 'parado') enviar({ tipo: 'audio-fim' });
+    const c = chamadaAudio;
+    chamadaAudio = null;
+    audioEstado = 'parado';
+    if (streamLocalAudio) streamLocalAudio.getTracks().forEach((t) => t.stop());
+    streamLocalAudio = null;
+    audioRemotoEl.srcObject = null;
+    if (c) { try { c.close(); } catch (e) {} }
+    atualizarBotaoAudio();
+}
+
+async function obterMicrofone() {
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        throw new Error('Este navegador/contexto não permite usar o microfone (use HTTPS ou localhost).');
+    }
+    return navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+}
+
+async function alternarAudio() {
+    if (!conectado) return;
+
+    if (audioEstado !== 'parado') {
+        encerrarAudio(true);
+        return;
+    }
+
+    try {
+        streamLocalAudio = await obterMicrofone();
+    } catch (err) {
+        alert('Erro ao acessar o microfone: ' + err.message);
+        return;
+    }
+
+    audioEstado = 'pedindo';
+    atualizarBotaoAudio();
+    enviar({ tipo: 'audio-pedido' });
+    audioTimer = setTimeout(() => {
+        if (audioEstado === 'pedindo') {
+            encerrarAudio(true);
+            avisoSistema('Sem resposta à chamada de áudio.');
+        }
+    }, 30000);
+}
+
+async function tratarPedidoAudio() {
+    if (audioEstado === 'ativo' || audioEstado === 'aguardando') return;
+
+    if (audioEstado === 'pedindo') {
+        if (peer.id < conexao.peer) return;
+        clearTimeout(audioTimer);
+        audioEstado = 'aguardando';
+        aguardarChamadaAudio();
+        enviar({ tipo: 'audio-aceito' });
+        return;
+    }
+
+    if (!confirm('O outro lado quer iniciar uma chamada de áudio. Aceitar?')) {
+        enviar({ tipo: 'audio-recusado' });
+        return;
+    }
+
+    try {
+        streamLocalAudio = await obterMicrofone();
+    } catch (err) {
+        enviar({ tipo: 'audio-recusado' });
+        alert('Erro ao acessar o microfone: ' + err.message);
+        return;
+    }
+
+    if (!conectado) {
+        encerrarAudio(false);
+        return;
+    }
+
+    audioEstado = 'aguardando';
+    atualizarBotaoAudio();
+    aguardarChamadaAudio();
+    enviar({ tipo: 'audio-aceito' });
+}
+
+function aguardarChamadaAudio() {
+    clearTimeout(audioTimer);
+    audioTimer = setTimeout(() => {
+        if (audioEstado === 'aguardando') encerrarAudio(false);
+    }, 15000);
+}
+
+function tratarAudioAceito() {
+    if (audioEstado !== 'pedindo' || !streamLocalAudio) return;
+    clearTimeout(audioTimer);
+
+    const chamada = peer.call(conexao.peer, streamLocalAudio, { metadata: { tipo: 'audio' } });
+    if (!chamada) {
+        encerrarAudio(true);
+        return;
+    }
+    chamadaAudio = chamada;
+    audioEstado = 'ativo';
+    configurarChamadaAudio(chamada);
+    atualizarBotaoAudio();
+}
+
+function configurarChamadaAudio(chamada) {
+    chamada.on('stream', (stream) => {
+        audioRemotoEl.srcObject = stream;
+        audioRemotoEl.play().catch((e) => console.log('Autoplay bloqueado:', e));
+    });
+    chamada.on('close', () => {
+        if (chamadaAudio === chamada) encerrarAudio(false);
+    });
+    chamada.on('error', () => {
+        if (chamadaAudio === chamada) encerrarAudio(false);
+    });
+}
+
+/* ---------- Compartilhamento de Tela ---------- */
+
+function limparTelaRecebida() {
+    const c = chamadaTelaRecebida;
+    chamadaTelaRecebida = null;
+    videoRemotoEl.srcObject = null;
+    videoRemotoEl.classList.add('escondido');
+    if (c) { try { c.close(); } catch (e) {} }
+}
+
+function pararTelaEnviada(avisar) {
+    const c = chamadaTelaEnviada;
+    const s = streamLocalTela;
+    chamadaTelaEnviada = null;
+    streamLocalTela = null;
+    if (s) s.getTracks().forEach((t) => t.stop());
+    if (avisar && conectado) enviar({ tipo: 'tela-fim' });
+    if (c) { try { c.close(); } catch (e) {} }
+    btnTela.textContent = '🖥️ Tela';
+    btnTela.classList.remove('ativo');
+}
+
+async function compartilharTela() {
+    if (!conectado) return;
+
+    if (streamLocalTela) {
+        pararTelaEnviada(true);
+        return;
+    }
+
+    try {
+        const stream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: false });
+        if (!conectado) {
+            stream.getTracks().forEach((t) => t.stop());
+            return;
+        }
+        streamLocalTela = stream;
+
+        const chamada = peer.call(conexao.peer, stream, { metadata: { tipo: 'tela' } });
+        chamadaTelaEnviada = chamada;
+
+        stream.getVideoTracks()[0].onended = () => {
+            if (streamLocalTela === stream) pararTelaEnviada(true);
+        };
+        chamada.on('close', () => {
+            if (chamadaTelaEnviada === chamada) pararTelaEnviada(false);
+        });
+        chamada.on('error', () => {
+            if (chamadaTelaEnviada === chamada) pararTelaEnviada(false);
+        });
+
+        btnTela.textContent = '⏹️ Parar tela';
+        btnTela.classList.add('ativo');
+    } catch (err) {
+        if (err.name !== 'NotAllowedError') {
+            alert('Não foi possível compartilhar a tela: ' + err.message);
+        }
+    }
+}
+
+/* ---------- Webcam ao Vivo ---------- */
+
+async function ligarWebcam(tipo) {
+    if (!conectado) {
+        alert('Conecte primeiro com o outro lado antes de ligar a câmera.');
+        return;
+    }
+    try {
+        if (streamLocalWebcam) desligarWebcam();
+        
+        $('statusWebcam').textContent = "📷 Iniciando câmera...";
+        
+        streamLocalWebcam = await navigator.mediaDevices.getUserMedia({
+            video: {
+                facingMode: tipo,
+                width: { ideal: 1280 },
+                height: { ideal: 720 }
+            },
+            audio: false
+        });
+        
+        const videoLocal = $('videoLocal');
+        videoLocal.srcObject = streamLocalWebcam;
+        videoLocal.classList.remove('escondido');
+        
+        if (tipo === 'environment') {
+            videoLocal.classList.add('trava-tras');
+        } else {
+            videoLocal.classList.remove('trava-tras');
+        }
+        
+        $('statusWebcam').textContent = 
+            tipo === 'user' ? "✅ Câmera da frente ativa — enviando..." : "✅ Câmera de trás ativa — enviando...";
+        
+        chamadaWebcam = peer.call(conexao.peer, streamLocalWebcam, { 
+            metadata: { tipo: 'webcam' }
+        });
+        
+        chamadaWebcam.on('close', encerrarChamadaWebcam);
+        chamadaWebcam.on('error', encerrarChamadaWebcam);
+        
+    } catch (erro) {
+        console.error('Erro câmera:', erro);
+        $('statusWebcam').textContent = "❌ Não foi possível acessar a câmera";
+    }
+}
+
+function desligarWebcam() {
+    if (streamLocalWebcam) {
+        streamLocalWebcam.getTracks().forEach(track => track.stop());
+        streamLocalWebcam = null;
+    }
+    if (chamadaWebcam) {
+        try { chamadaWebcam.close(); } catch (e) {}
+        chamadaWebcam = null;
+    }
+    const videoLocal = $('videoLocal');
+    if (videoLocal) {
+        videoLocal.srcObject = null;
+        videoLocal.classList.add('escondido');
+    }
+    const statusW = $('statusWebcam');
+    if (statusW) statusW.textContent = "Câmera desligada";
+}
+
+function encerrarChamadaWebcam() {
+    chamadaWebcam = null;
+}
+
+/* ---------- Chamadas de entrada ---------- */
+
+function receberChamada(chamada) {
+    const tipo = chamada.metadata && chamada.metadata.tipo;
+
+    if (!conectado || !conexao || chamada.peer !== conexao.peer) {
+        chamada.close();
+        return;
+    }
+
+    if (tipo === 'audio') {
+        if (audioEstado !== 'aguardando' || !streamLocalAudio) {
+            chamada.close();
+            return;
+        }
+        clearTimeout(audioTimer);
+        chamada.answer(streamLocalAudio);
+        chamadaAudio = chamada;
+        audioEstado = 'ativo';
+        configurarChamadaAudio(chamada);
+        atualizarBotaoAudio();
+
+    } else if (tipo === 'tela') {
+        limparTelaRecebida();
+        chamada.answer();
+        chamadaTelaRecebida = chamada;
+
+        chamada.on('stream', (stream) => {
+            videoRemotoEl.srcObject = stream;
+            videoRemotoEl.classList.remove('escondido');
+            videoRemotoEl.play().catch(() => {});
+        });
+        chamada.on('close', () => {
+            if (chamadaTelaRecebida === chamada) limparTelaRecebida();
+        });
+        chamada.on('error', () => {
+            if (chamadaTelaRecebida === chamada) limparTelaRecebida();
+        });
+
+    } else if (tipo === 'webcam') {
+        chamada.answer();
+        chamada.on('stream', (stream) => {
+            videoRemotoEl.srcObject = stream;
+            videoRemotoEl.classList.remove('escondido');
+            videoRemotoEl.play().catch(() => {});
+        });
+        chamada.on('close', () => {
+            videoRemotoEl.srcObject = null;
+            videoRemotoEl.classList.add('escondido');
+        });
+
+    } else {
+        chamada.close();
+    }
+}
+
+function pararMidia() {
+    encerrarAudio(false);
+    pararTelaEnviada(false);
+    limparTelaRecebida();
+}
+
+/* ---------- Inicialização e Listeners ---------- */
+
+btnCopiar.addEventListener('click', copiarId);
+btnConectar.addEventListener('click', iniciarConexao);
+idParceiroEl.addEventListener('keydown', (e) => { if (e.key === 'Enter') iniciarConexao(); });
+$('btnFoto').addEventListener('click', () => arquivoFotoEl.click());
+btnAudio.addEventListener('click', alternarAudio);
+btnTela.addEventListener('click', compartilharTela);
+btnToggleWebcam.addEventListener('click', () => {
+    areaWebcam.classList.toggle('escondido');
+});
+$('btnSair').addEventListener('click', desconectar);
+$('btnEnviar').addEventListener('click', enviarMensagem);
+mensagemTextoEl.addEventListener('keydown', (e) => { if (e.key === 'Enter') enviarMensagem(); });
+
+if (!navigator.mediaDevices || !navigator.mediaDevices.getDisplayMedia) {
+    btnTela.classList.add('escondido');
+}
+
+window.addEventListener('beforeunload', () => { if (peer) peer.destroy(); });
+window.addEventListener('load', inicializarPeer);
+</script>
+</body>
+</html>
