@@ -128,37 +128,6 @@
         .btn-atender { background: #22c55e; color: white; padding: 10px 24px; }
         .btn-recusar { background: #ef4444; color: white; padding: 10px 24px; }
 
-        /* === PAINEL DURANTE CHAMADA === */
-        .painel-chamada {
-            position: fixed;
-            bottom: 90px;
-            right: 20px;
-            background: rgba(15, 23, 42, 0.95);
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 16px;
-            padding: 16px 20px;
-            z-index: 9998;
-            opacity: 0;
-            visibility: hidden;
-            transition: all 0.3s ease;
-            min-width: 240px;
-        }
-        .painel-chamada.ativo {
-            opacity: 1;
-            visibility: visible;
-        }
-        .painel-chamada .cabecalho { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
-        .painel-chamada .tempo { font-size: 0.85rem; color: #94a3b8; }
-        .botoes-controles { display: flex; gap: 8px; flex-wrap: wrap; }
-        .botoes-controles button {
-            padding: 8px 12px;
-            background: rgba(255,255,255,0.05);
-            color: white;
-            border: 1px solid rgba(255,255,255,0.1);
-            font-size: 0.85rem;
-        }
-        .botoes-controles button.ativo-btn { background: #22c55e; border-color: #22c55e; }
-
         /* === SIMULAÇÃO NA SALA === */
         .simulacao-container {
             text-align: center;
@@ -236,8 +205,8 @@
         <p style="opacity:0.7; font-size:0.9rem; margin-bottom:20px;">Escolha uma aba acima para navegar.</p>
         <div style="background:rgba(255,255,255,0.03); padding:15px; border-radius:8px; border:1px solid rgba(255,255,255,0.08);">
             <p><strong>💡 Dica:</strong></p>
-            <p style="font-size:0.85rem; opacity:0.7; margin-top:5px;">• Vá em <strong>"📞 Simular Chamada"</strong> para testar a tela flutuante</p>
-            <p style="font-size:0.85rem; opacity:0.7;">• Ou clique no botão azul no canto inferior direito a qualquer momento</p>
+            <p style="font-size:0.85rem; opacity:0.7; margin-top:5px;">• Vá em <strong>"📞 Simular Chamada"</strong> para testar o fluxo de ligação</p>
+            <p style="font-size:0.85rem; opacity:0.7;">• Ou clique no botão azul no canto inferior direito para abrir direto sua <strong>tela-flutuante.html</strong></p>
         </div>
     </section>
 
@@ -288,14 +257,14 @@
     <section id="pag-suporte">
         <h2>❓ Suporte</h2>
         <div style="font-size:0.85rem; line-height:1.7; opacity:0.8;">
-            <p><strong>📞 Simulação:</strong> Vá em "Simular Chamada", clique no botão verde e veja a telinha aparecer.</p>
-            <p><strong>🔘 Botão rápido:</strong> O botão azul no canto inferior direito abre a telinha a qualquer momento.</p>
+            <p><strong>📞 Simulação:</strong> Vá em "Simular Chamada", clique no botão verde e atenda para abrir sua janela flutuante completa.</p>
+            <p><strong>🔘 Botão rápido:</strong> O botão azul no canto inferior direito abre a <code>tela-flutuante.html</code> diretamente.</p>
             <p style="margin-top:20px; opacity:0.4;">Versão 1.0 — Simulação de Chamada</p>
         </div>
     </section>
 </main>
 
-<!-- 🔘 BOTÃO FLUTUANTE — ABRIR TELA DIRETAMENTE -->
+<!-- 🔘 BOTÃO FLUTUANTE — ABRIR SUA TELA DIRETO -->
 <button class="btn-acessar-telafloat" id="btnAbrirTelaFloat" title="Abrir Tela Flutuante">📋</button>
 
 <!-- 📞 TELA DE CHAMADA ENTRANTE -->
@@ -306,21 +275,6 @@
     <div class="acoes-chamada">
         <button class="btn-atender" id="btnAtender">📤 Atender</button>
         <button class="btn-recusar" id="btnRecusar">📥 Recusar</button>
-    </div>
-</div>
-
-<!-- 📞 PAINEL DURANTE CHAMADA -->
-<div class="painel-chamada" id="painelChamada">
-    <div class="cabecalho">
-        <strong id="nomeChamada">Ana Albuquerque</strong>
-        <span class="tempo" id="cronometro">00:00</span>
-    </div>
-    <div class="botoes-controles">
-        <button id="btMicrofone">🎤 Mudo</button>
-        <button id="btVolume">🔊 Volume</button>
-        <button id="btWebcam">📷 Webcam</button>
-        <button id="btTela">🖥️ Tela</button>
-        <button id="btChat">💬 Chat</button>
     </div>
 </div>
 
@@ -352,11 +306,29 @@ salvarPerfil.addEventListener('click', () => {
     setTimeout(() => salvarPerfil.textContent = 'Salvar Alterações', 1500);
 });
 
-// === 🔘 BOTÃO RÁPIDO — ABRIR TELA FLUTUANTE ===
+// === 🪟 FUNÇÃO PARA ABRIR SUA TELA FLUTUANTE ===
+let janelaFlutuanteRef = null;
+
+function abrirSuaTelaFlutuante() {
+    if (janelaFlutuanteRef && !janelaFlutuanteRef.closed) {
+        janelaFlutuanteRef.focus();
+    } else {
+        janelaFlutuanteRef = window.open(
+            'tela-flutuante.html',
+            'GuardianShieldFloat',
+            'width=420,height=580,top=100,left=100,popup=yes'
+        );
+    }
+}
+
+// === 🔘 BOTÃO RÁPIDO — ABRE SUA TELA DIRETO ===
 const btnAbrirTelaFloat = document.getElementById('btnAbrirTelaFloat');
+btnAbrirTelaFloat.addEventListener('click', () => {
+    abrirSuaTelaFlutuante();
+});
+
+// === 📞 SIMULAÇÃO DE CHAMADA ===
 const telaChamadaEntrante = document.getElementById('telaChamadaEntrante');
-const painelChamada = document.getElementById('painelChamada');
-const cronometro = document.getElementById('cronometro');
 const textoAguardando = document.getElementById('textoAguardando');
 const btnAtender = document.getElementById('btnAtender');
 const btnRecusar = document.getElementById('btnRecusar');
@@ -374,14 +346,6 @@ function formatarTempo(seg) {
     return `${m}:${s}`;
 }
 
-btnAbrirTelaFloat.addEventListener('click', () => {
-    if (!chamadaAtiva) {
-        botoesMenu[1].click(); // vai para aba Simular Chamada
-        iniciarChamada();
-    }
-});
-
-// === 📞 SIMULAÇÃO DE CHAMADA ===
 btnLigarSim.addEventListener('click', () => {
     if (!chamadaAtiva) {
         iniciarChamada();
@@ -401,24 +365,25 @@ function iniciarChamada() {
     }, 1500);
 }
 
-// ATENDER CHAMADA
+// ATENDER CHAMADA -> ABRE SUA TELA FLUTUANTE
 btnAtender.addEventListener('click', () => {
     telaChamadaEntrante.classList.remove('ativo');
-    painelChamada.classList.add('ativo');
     
     btnLigarSim.classList.remove('chamando');
     btnLigarSim.classList.add('conectado');
     btnLigarSim.innerHTML = '✓';
-    statusSimulacao.innerHTML = '🟢 Em chamada — conectado!';
     btnFinalizar.style.display = 'inline-block';
     chamadaAtiva = true;
 
-    // Inicia cronômetro
+    // Abre o seu design completo na janela separada
+    abrirSuaTelaFlutuante();
+
+    // Inicia cronômetro no status da sala
     segundos = 0;
-    cronometro.textContent = formatarTempo(0);
+    statusSimulacao.innerHTML = `🟢 Em chamada (${formatarTempo(segundos)}) — Janela flutuante aberta!`;
     cron = setInterval(() => {
         segundos++;
-        cronometro.textContent = formatarTempo(segundos);
+        statusSimulacao.innerHTML = `🟢 Em chamada (${formatarTempo(segundos)}) — Janela flutuante aberta!`;
     }, 1000);
 });
 
@@ -436,7 +401,9 @@ btnRecusar.addEventListener('click', () => {
 // ENCERRAR CHAMADA
 btnFinalizar.addEventListener('click', () => {
     clearInterval(cron);
-    painelChamada.classList.remove('ativo');
+    if (janelaFlutuanteRef && !janelaFlutuanteRef.closed) {
+        janelaFlutuanteRef.close();
+    }
     btnLigarSim.classList.remove('conectado');
     btnLigarSim.innerHTML = '📞';
     btnFinalizar.style.display = 'none';
@@ -445,13 +412,6 @@ btnFinalizar.addEventListener('click', () => {
     setTimeout(() => {
         statusSimulacao.innerHTML = '🟢 Pronto — clique no botão para iniciar';
     }, 3000);
-});
-
-// Botões de controle durante chamada
-document.querySelectorAll('.botoes-controles button').forEach(btn => {
-    btn.addEventListener('click', () => {
-        btn.classList.toggle('ativo-btn');
-    });
 });
 </script>
 
