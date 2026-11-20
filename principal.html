@@ -206,7 +206,7 @@
         <div style="background:rgba(255,255,255,0.03); padding:15px; border-radius:8px; border:1px solid rgba(255,255,255,0.08);">
             <p><strong>💡 Dica:</strong></p>
             <p style="font-size:0.85rem; opacity:0.7; margin-top:5px;">• Vá em <strong>"📞 Simular Chamada"</strong> para testar o fluxo de ligação</p>
-            <p style="font-size:0.85rem; opacity:0.7;">• Ou clique no botão azul no canto inferior direito para abrir direto sua <strong>tela-flutuante.html</strong></p>
+            <p style="font-size:0.85rem; opacity:0.7;">• Ou clique no botão azul no canto inferior direito para abrir direto sua <strong>tela-flutuante.html</strong> na mesma página</p>
         </div>
     </section>
 
@@ -257,8 +257,8 @@
     <section id="pag-suporte">
         <h2>❓ Suporte</h2>
         <div style="font-size:0.85rem; line-height:1.7; opacity:0.8;">
-            <p><strong>📞 Simulação:</strong> Vá em "Simular Chamada", clique no botão verde e atenda para abrir sua janela flutuante completa.</p>
-            <p><strong>🔘 Botão rápido:</strong> O botão azul no canto inferior direito abre a <code>tela-flutuante.html</code> diretamente.</p>
+            <p><strong>📞 Simulação:</strong> Vá em "Simular Chamada", clique no botão verde e atenda para abrir sua janela flutuante sobre a tela.</p>
+            <p><strong>🔘 Botão rápido:</strong> O botão azul no canto inferior direito abre a <code>tela-flutuante.html</code> na mesma aba.</p>
             <p style="margin-top:20px; opacity:0.4;">Versão 1.0 — Simulação de Chamada</p>
         </div>
     </section>
@@ -276,6 +276,56 @@
         <button class="btn-atender" id="btnAtender">📤 Atender</button>
         <button class="btn-recusar" id="btnRecusar">📥 Recusar</button>
     </div>
+</div>
+
+<!-- 🪟 JANELA FLUTUANTE DA SALA DE CHAMADA (MESMA PÁGINA) -->
+<div id="janelaSalaP2P" style="
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 90%;
+    height: 85%;
+    max-width: 900px;
+    border-radius: 16px;
+    border: 1px solid rgba(255,255,255,0.1);
+    box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+    background: #0F172A;
+    z-index: 10001;
+    display: none;
+    flex-direction: column;
+    overflow: hidden;
+">
+    <!-- Cabeçalho -->
+    <div style="
+        padding: 10px 16px;
+        background: rgba(0,0,0,0.3);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid rgba(255,255,255,0.08);
+    ">
+        <span style="font-size: 0.9rem; font-weight: 500;">📞 Sala de Chamada P2P</span>
+        <button onclick="fecharSalaP2P()" style="
+            background: #ef4444;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 28px;
+            height: 28px;
+            font-size: 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        ">×</button>
+    </div>
+    <!-- Carrega a sua tela-flutuante.html dentro -->
+    <iframe id="iframeSalaP2P" src="tela-flutuante.html" style="
+        width: 100%;
+        height: 100%;
+        border: none;
+    " title="Sala de Chamada P2P"></iframe>
 </div>
 
 <script>
@@ -306,25 +356,21 @@ salvarPerfil.addEventListener('click', () => {
     setTimeout(() => salvarPerfil.textContent = 'Salvar Alterações', 1500);
 });
 
-// === 🪟 FUNÇÃO PARA ABRIR SUA TELA FLUTUANTE ===
-let janelaFlutuanteRef = null;
-
-function abrirSuaTelaFlutuante() {
-    if (janelaFlutuanteRef && !janelaFlutuanteRef.closed) {
-        janelaFlutuanteRef.focus();
-    } else {
-        janelaFlutuanteRef = window.open(
-            'tela-flutuante.html',
-            'GuardianShieldFloat',
-            'width=420,height=580,top=100,left=100,popup=yes'
-        );
-    }
+// === 🪟 ABRIR E FECHAR SALA P2P NA MESMA PÁGINA ===
+function abrirSalaP2P() {
+    document.getElementById('janelaSalaP2P').style.display = 'flex';
+    document.body.style.overflow = 'hidden';
 }
 
-// === 🔘 BOTÃO RÁPIDO — ABRE SUA TELA DIRETO ===
+function fecharSalaP2P() {
+    document.getElementById('janelaSalaP2P').style.display = 'none';
+    document.body.style.overflow = '';
+}
+
+// === 🔘 BOTÃO RÁPIDO — ABRE SUA TELA NA MESMA PÁGINA ===
 const btnAbrirTelaFloat = document.getElementById('btnAbrirTelaFloat');
 btnAbrirTelaFloat.addEventListener('click', () => {
-    abrirSuaTelaFlutuante();
+    abrirSalaP2P();
 });
 
 // === 📞 SIMULAÇÃO DE CHAMADA ===
@@ -365,7 +411,7 @@ function iniciarChamada() {
     }, 1500);
 }
 
-// ATENDER CHAMADA -> ABRE SUA TELA FLUTUANTE
+// ATENDER CHAMADA -> ABRE NA MESMA PÁGINA
 btnAtender.addEventListener('click', () => {
     telaChamadaEntrante.classList.remove('ativo');
     
@@ -375,8 +421,8 @@ btnAtender.addEventListener('click', () => {
     btnFinalizar.style.display = 'inline-block';
     chamadaAtiva = true;
 
-    // Abre o seu design completo na janela separada
-    abrirSuaTelaFlutuante();
+    // Abre o seu design completo por cima da página principal
+    abrirSalaP2P();
 
     // Inicia cronômetro no status da sala
     segundos = 0;
@@ -401,9 +447,7 @@ btnRecusar.addEventListener('click', () => {
 // ENCERRAR CHAMADA
 btnFinalizar.addEventListener('click', () => {
     clearInterval(cron);
-    if (janelaFlutuanteRef && !janelaFlutuanteRef.closed) {
-        janelaFlutuanteRef.close();
-    }
+    fecharSalaP2P();
     btnLigarSim.classList.remove('conectado');
     btnLigarSim.innerHTML = '📞';
     btnFinalizar.style.display = 'none';
