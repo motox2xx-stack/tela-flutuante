@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Perfil e Configurações — Guardian Shield</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+:root { --fundo:#0F172A; --card:#1E293B; --borda:rgba(255,255,255,.08); --texto:#F8FAFC; --suave:#94A3B8; --destaque:#60A5FA; --ok:#22C55E; --perigo:#EF4444; }
+:root[data-tema="claro"] { --fundo:#F1F5F9; --card:#FFFFFF; --borda:rgba(15,23,42,.1); --texto:#0F172A; --suave:#64748B; }
+body { background:var(--fundo); color:var(--texto); min-height:100vh; padding:2rem 1.25rem 4rem; max-width:700px; margin:0 auto; }
+button { font:inherit; color:inherit; border:none; background:none; cursor:pointer; }
+:focus-visible { outline:2px solid var(--destaque); outline-offset:2px; }
+.voltar { color:var(--destaque); text-decoration:none; font-size:.9rem; display:inline-block; margin-bottom:1.5rem; }
+.voltar:hover { text-decoration:underline; }
+h1 { font-size:1.6rem; margin-bottom:.3rem; }
+.sub { color:var(--suave); font-size:.9rem; margin-bottom:1.5rem; }
+.aviso { background:rgba(234,179,8,.12); border:1px solid rgba(234,179,8,.35); border-radius:10px; padding:.7rem 1rem; font-size:.85rem; margin-bottom:1.25rem; }
+.aviso a { color:var(--destaque); }
+.cabecalho { display:flex; align-items:center; gap:1.2rem; padding:1.5rem; background:var(--card); border:1px solid var(--borda); border-radius:14px; margin-bottom:1.5rem; }
+.foto { position:relative; width:80px; height:80px; border-radius:50%; background:linear-gradient(135deg,var(--destaque),#3B82F6); display:grid; place-items:center; font-size:1.8rem; font-weight:700; color:#fff; flex-shrink:0; }
+.foto img { position:absolute; inset:0; width:100%; height:100%; border-radius:50%; object-fit:cover; }
+.cam { position:absolute; right:-4px; bottom:-4px; width:28px; height:28px; border-radius:50%; background:var(--destaque); border:2px solid var(--fundo); font-size:.7rem; z-index:1; }
+.info h2 { font-size:1.2rem; }
+.msg { font-size:.85rem; color:var(--suave); margin:.2rem 0; text-align:left; }
+.msg:hover { text-decoration:underline; }
+.busca { width:100%; padding:.9rem 1rem; background:var(--card); border:1px solid var(--borda); border-radius:10px; color:var(--texto); font-size:.95rem; margin-bottom:1.75rem; }
+.busca:focus { outline:none; border-color:var(--destaque); }
+.secao { margin-bottom:1.5rem; }
+.secao h3 { font-size:.8rem; text-transform:uppercase; letter-spacing:.5px; color:var(--suave); margin-bottom:.6rem; }
+.bloco { background:var(--card); border:1px solid var(--borda); border-radius:12px; overflow:hidden; }
+.bloco + .bloco { margin-top:.5rem; }
+.item { display:flex; justify-content:space-between; align-items:center; gap:1rem; padding:.95rem 1.2rem; border-bottom:1px solid var(--borda); }
+.item:last-child { border-bottom:none; }
+.item.clic { cursor:pointer; }
+.item.clic:hover { background:rgba(128,128,128,.07); }
+.esq { display:flex; align-items:center; gap:.9rem; min-width:0; }
+.icone { width:24px; text-align:center; font-size:1.1rem; flex-shrink:0; }
+.rotulo { font-size:.95rem; }
+.valor { font-size:.85rem; color:var(--suave); word-break:break-word; }
+.valor:empty { display:none; }
+.seta { color:var(--suave); font-size:.8rem; }
+.toggle { width:44px; height:24px; border-radius:12px; background:var(--suave); position:relative; flex-shrink:0; transition:background .2s; }
+.toggle::after { content:''; position:absolute; top:2px; left:2px; width:20px; height:20px; border-radius:50%; background:#fff; transition:transform .2s; }
+.toggle.ativo { background:var(--ok); }
+.toggle.ativo::after { transform:translateX(20px); }
+.vazio { text-align:center; color:var(--suave); padding:2rem; font-size:.9rem; }
+.mf { position:fixed; inset:0; background:rgba(0,0,0,.6); display:grid; place-items:center; z-index:50; opacity:0; visibility:hidden; transition:opacity .2s; }
+.mf.aberto { opacity:1; visibility:visible; }
+.modal { background:var(--card); border:1px solid var(--borda); border-radius:14px; padding:1.5rem; width:90%; max-width:400px; }
+.modal h4 { font-size:1.1rem; margin-bottom:1rem; }
+.modal input { width:100%; padding:.8rem 1rem; background:var(--fundo); border:1px solid var(--borda); border-radius:8px; color:var(--texto); font-size:.95rem; margin-bottom:.7rem; }
+.modal input:focus { outline:none; border-color:var(--destaque); }
+.erro { color:#F87171; font-size:.82rem; min-height:1.1rem; margin-bottom:.6rem; }
+.acoes { display:flex; gap:.6rem; justify-content:flex-end; }
+.acoes button { padding:.6rem 1.2rem; border-radius:8px; font-size:.9rem; }
+.acoes .ok { background:var(--destaque); color:#0F172A; font-weight:600; }
+.lin { display:flex; justify-content:space-between; align-items:center; padding:.55rem 0; border-bottom:1px solid var(--borda); font-size:.92rem; }
+.mini { padding:.3rem .8rem; border-radius:6px; border:1px solid var(--borda); font-size:.8rem; }
+.mini.on { background:var(--perigo); border-color:var(--perigo); color:#fff; }
+.toast { position:fixed; left:50%; bottom:1.5rem; transform:translate(-50%,20px); background:#0B1220; color:#F8FAFC; border:1px solid rgba(255,255,255,.12); padding:.7rem 1.1rem; border-radius:10px; font-size:.85rem; opacity:0; pointer-events:none; transition:all .25s; z-index:60; max-width:90vw; text-align:center; }
+.toast.vis { opacity:1; transform:translate(-50%,0); }
+[hidden] { display:none !important; }
+@media (prefers-reduced-motion:reduce) { * { transition:none !important; } }
+</style>
+</head>
+<body>
+<a class="voltar" href="principal.html">← Voltar ao Menu</a>
+<h1>Perfil e Configurações</h1>
+<p class="sub">Gerencie sua conta e preferências</p>
+
+<div class="aviso" id="aviso" hidden>Você não está conectado. Alterações ficam só neste aparelho. <a href="index.html">Entrar</a></div>
+
+<div class="cabecalho">
+    <div class="foto">
+        <span id="ini">U</span><img id="fotoImg" alt="Foto de perfil" hidden>
+        <button class="cam" id="btnFoto" aria-label="Trocar foto">📷</button>
+        <input type="file" id="inputFoto" accept="image/*" hidden>
+    </div>
+    <div class="info">
+        <h2 id="hNome">Usuário</h2>
+        <button class="msg" id="hMsg">Sem status</button>
+        <div id="hStatus" style="font-size:.85rem;font-weight:500"></div>
+    </div>
+</div>
+
+<input type="search" class="busca" id="busca" placeholder="Buscar configurações..." aria-label="Buscar configurações">
+<div id="secoes"></div>
+<div class="vazio" id="vazio" hidden>🔍 Nenhuma configuração encontrada</div>
+
+<div class="mf" id="mf">
+    <form class="modal" id="mForm">
+        <h4 id="mTitulo"></h4>
+        <div id="mCampos"></div>
+        <div class="erro" id="mErro" role="alert"></div>
+        <div class="acoes">
+            <button type="button" id="mCancelar"></button>
+            <button type="submit" class="ok" id="mOk"></button>
+        </div>
+    </form>
+</div>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+const sb = window.supabase ? supabase.createClient('https://anvdihxzwvbpomejydid.supabase.co', 'sb_publishable_3OliyDBDFdpD_skoxIx-EQ_2eRE1tme') : null;
+const $ = (id) => document.getElementById(id);
+const P = 'guardian_shield_';
+const ls = {
+    g(k, p = '') { try { const v = localStorage.getItem(k); return v === null ? p : v; } catch (e) { return p; } },
+    s(k, v) { try { localStorage.setItem(k, v); return true; } catch (e) { return false; } },
+    d(k) { try { localStorage.removeItem(k); } catch (e) {} }
+};
+const STATUS = { disponivel: ['Disponível', '#22C55E'], ocupado: ['Ocupado', '#EF4444'], ausente: ['Ausente', '#EAB308'], silencio: ['Modo Silêncio', '#6366F1'] };
+const CORES = [['Azul', '#60A5FA'], ['Verde', '#4ADE80'], ['Roxo', '#A78BFA'], ['Laranja', '#FB923C']];
+const CONTATOS = [[1, 'Ana Silva'], [2, 'Beatriz Costa'], [3, 'Carlos Mendes'], [4, 'Fernanda Lima'], [5, 'Mariana Souza'], [6, 'Rafael Gomes']];
+let usuario = null, termo = '';
+const abertos = new Set();
+
+const nome = () => ls.g(P + 'nome') || ls.g('usuarioNome') || 'Usuário';
+const status = () => (STATUS[ls.g(P + 'status')] ? ls.g(P + 'status') : 'disponivel');
+const tema = () => ls.g(P + 'tema', 'escuro');
+const cor = () => Number(ls.g(P + 'cor', '0')) % CORES.length;
+const pref = (k) => ls.g(P + 'pref_' + k, '1') === '1';
+const bloqueados = () => { try { return JSON.parse(ls.g(P + 'bloqueados', '[]')); } catch (e) { return []; } };
+
+function toast(t) {
+    const el = $('toast'); el.textContent = t; el.classList.add('vis');
+    clearTimeout(toast.t); toast.t = setTimeout(() => el.classList.remove('vis'), 2600);
+}
+
+/* ---------- Modal reutilizável ---------- */
+let acaoModal = null;
+function modal({ titulo, campos = [], extra, ok = 'Salvar', aoSalvar }) {
+    $('mTitulo').textContent = titulo;
+    const c = $('mCampos'); c.innerHTML = '';
+    campos.forEach((f) => {
+        const i = document.createElement('input');
+        i.type = f.tipo || 'text'; i.placeholder = f.ph; i.value = f.valor || ''; i.setAttribute('aria-label', f.ph);
+        c.appendChild(i);
+    });
+    if (extra) c.appendChild(extra());
+    $('mErro').textContent = '';
+    $('mOk').textContent = ok; $('mOk').hidden = !aoSalvar;
+    $('mCancelar').textContent = aoSalvar ? 'Cancelar' : 'Fechar';
+    acaoModal = aoSalvar;
+    $('mf').classList.add('aberto');
+    const p = c.querySelector('input'); if (p) p.focus();
+}
+const fechar = () => $('mf').classList.remove('aberto');
+$('mCancelar').addEventListener('click', fechar);
+$('mf').addEventListener('click', (e) => { if (e.target === $('mf')) fechar(); });
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape') fechar(); });
+$('mForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (!acaoModal) return;
+    $('mOk').disabled = true;
+    const valores = [...$('mCampos').querySelectorAll('input')].map((i) => i.value);
+    const erro = await acaoModal(valores);
+    $('mOk').disabled = false;
+    if (erro) { $('mErro').textContent = erro; return; }
+    fechar();
+});
+
+/* ---------- Ações ---------- */
+function editarNome() {
+    modal({ titulo: 'Editar nome', campos: [{ ph: 'Seu nome completo', valor: nome() === 'Usuário' ? '' : nome() }],
+        aoSalvar: async ([n]) => {
+            n = n.trim();
+            if (n.length < 2) return 'Digite pelo menos 2 letras.';
+            ls.s(P + 'nome', n); ls.s('usuarioNome', n); render();
+            if (!usuario) return toast('Nome salvo neste aparelho');
+            const { error } = await sb.from('usuarios').update({ nome: n }).eq('id', usuario.id);
+            toast(error ? 'Nome salvo só neste aparelho' : 'Nome atualizado');
+        } });
+}
+function editarMsg() {
+    modal({ titulo: 'Mensagem de status', campos: [{ ph: 'Ex.: Em reunião até as 15h', valor: ls.g(P + 'msg') }],
+        aoSalvar: ([m]) => { ls.s(P + 'msg', m.trim().slice(0, 80)); render(); toast('Mensagem salva'); } });
+}
+function editarEmail() {
+    if (!usuario) return toast('Entre na conta para trocar o e-mail');
+    modal({ titulo: 'Editar e-mail', campos: [{ ph: 'novo@email.com', tipo: 'email' }],
+        aoSalvar: async ([e]) => {
+            e = e.trim();
+            if (!e.includes('@')) return 'Digite um e-mail válido.';
+            const { error } = await sb.auth.updateUser({ email: e });
+            if (error) return 'Não foi possível trocar: ' + error.message;
+            toast('Enviamos um link de confirmação para o novo e-mail');
+        } });
+}
+function editarSenha() {
+    if (!usuario) return toast('Entre na conta para trocar a senha');
+    modal({ titulo: 'Alterar senha', ok: 'Alterar',
+        campos: [{ ph: 'Senha atual', tipo: 'password' }, { ph: 'Nova senha (mínimo 6 caracteres)', tipo: 'password' }, { ph: 'Repita a nova senha', tipo: 'password' }],
+        aoSalvar: async ([a, n, c]) => {
+            if (!a || !n) return 'Preencha todos os campos.';
+            if (n.length < 6) return 'A nova senha precisa ter pelo menos 6 caracteres.';
+            if (n !== c) return 'As senhas não coincidem.';
+            const r = await sb.auth.signInWithPassword({ email: usuario.email, password: a });
+            if (r.error) return 'Senha atual incorreta.';
+            const { error } = await sb.auth.updateUser({ password: n });
+            if (error) return 'Não foi possível alterar: ' + error.message;
+            toast('Senha alterada');
+        } });
+}
+function gerenciarBloqueios() {
+    modal({ titulo: 'Contatos bloqueados', extra: () => {
+        const box = document.createElement('div');
+        const desenha = () => {
+            box.innerHTML = '';
+            CONTATOS.forEach(([id, n]) => {
+                const bl = bloqueados().includes(id);
+                const r = document.createElement('div'); r.className = 'lin';
+                const s = document.createElement('span'); s.textContent = n;
+                const b = document.createElement('button'); b.type = 'button';
+                b.className = 'mini' + (bl ? ' on' : ''); b.textContent = bl ? 'Desbloquear' : 'Bloquear';
+                b.onclick = () => {
+                    const l = bloqueados().filter((x) => x !== id); if (!bl) l.push(id);
+                    ls.s(P + 'bloqueados', JSON.stringify(l)); desenha(); render();
+                };
+                r.append(s, b); box.appendChild(r);
+            });
+        };
+        desenha(); return box;
+    } });
+}
+function alternarTema() { ls.s(P + 'tema', tema() === 'claro' ? 'escuro' : 'claro'); render(); }
+function proximaCor() { ls.s(P + 'cor', String((cor() + 1) % CORES.length)); render(); }
+function limparSessao() { ['usuarioNome', 'usuarioEmail', 'usuarioCodigo'].forEach(ls.d); }
+async function sair(global) {
+    if (!confirm(global ? 'Sair de todos os dispositivos?' : 'Sair da conta?')) return;
+    try { await sb.auth.signOut(global ? { scope: 'global' } : undefined); } catch (e) {}
+    limparSessao(); location.replace('index.html');
+}
+function limparHistorico() {
+    if (!confirm('Apagar todo o histórico do chat neste aparelho?')) return;
+    ls.d(P + 'historico'); render(); toast('Histórico apagado');
+}
+function redefinir() {
+    if (!confirm('Voltar todas as preferências ao padrão?')) return;
+    try { Object.keys(localStorage).filter((k) => k.startsWith(P + 'pref_')).forEach(ls.d); } catch (e) {}
+    ls.d(P + 'tema'); ls.d(P + 'cor'); render(); toast('Preferências redefinidas');
+}
+function espaco() {
+    let b = 0;
+    try { for (const k of Object.keys(localStorage)) b += (k.length + localStorage.getItem(k).length) * 2; } catch (e) {}
+    return b < 1048576 ? (b / 1024).toFixed(1) + ' KB usados' : (b / 1048576).toFixed(2) + ' MB usados';
+}
+
+/* ---------- Foto (reduz para 256 px antes de salvar) ---------- */
+$('btnFoto').addEventListener('click', () => $('inputFoto').click());
+$('inputFoto').addEventListener('change', (e) => {
+    const f = e.target.files[0]; e.target.value = '';
+    if (!f) return;
+    const url = URL.createObjectURL(f), img = new Image();
+    img.onload = () => {
+        const t = 256, c = document.createElement('canvas'); c.width = c.height = t;
+        const m = Math.min(img.width, img.height);
+        c.getContext('2d').drawImage(img, (img.width - m) / 2, (img.height - m) / 2, m, m, 0, 0, t, t);
+        URL.revokeObjectURL(url);
+        toast(ls.s('fotoPerfil', c.toDataURL('image/jpeg', 0.85)) ? 'Foto atualizada' : 'Sem espaço para salvar a foto');
+        render();
+    };
+    img.onerror = () => toast('Arquivo de imagem inválido');
+    img.src = url;
+});
+
+/* ---------- Estrutura das seções ---------- */
+function secoes() {
+    const nb = bloqueados().length;
+    return [
+        { t: 'Conta', itens: [
+            { i: '👤', r: 'Nome', v: nome(), a: editarNome, d: '✏️' },
+            { i: '✉️', r: 'E-mail', v: usuario ? usuario.email : (ls.g('usuarioEmail') || 'Não definido'), a: editarEmail, d: '✏️' },
+            { i: '🔒', r: 'Alterar senha', v: 'Segurança da conta', a: editarSenha, d: '›' } ] },
+        { t: 'Aparência', itens: [
+            { i: '🪟', r: 'Tela flutuante', v: 'Exibir janela flutuante em chamadas', p: 'flutuante' },
+            { i: '🎨', r: 'Tema', v: tema() === 'claro' ? 'Claro' : 'Escuro (padrão)', a: alternarTema, d: '›' } ] },
+        { t: 'Disponibilidade', ac: '🟢', v: STATUS[status()][0],
+          itens: Object.entries(STATUS).map(([k, [n, c]]) => ({ i: '●', c, r: n, d: status() === k ? '✓' : '',
+              a: () => { ls.s(P + 'status', k); render(); toast('Status: ' + n); } })) },
+        { t: 'Privacidade e Segurança', ac: '🔒', v: 'Controle sua conta', itens: [
+            { i: '✓', r: 'Confirmação de leitura', v: 'Ver se mensagens foram lidas', p: 'leitura' },
+            { i: '🕒', r: 'Mostrar última visualização', v: 'Quando esteve online', p: 'ultimavez' },
+            { i: '🚫', r: 'Bloquear contatos', v: nb ? nb + ' bloqueado(s)' : 'Gerenciar lista', a: gerenciarBloqueios, d: '›' },
+            { i: '🚪', r: 'Sair de todos os dispositivos', v: 'Encerra todas as sessões abertas', a: () => usuario ? sair(true) : toast('Você não está conectado'), d: '›' } ] },
+        { t: 'Personalização', ac: '🎨', v: 'Aparência e sons', itens: [
+            { i: '🎨', r: 'Cor de destaque', v: CORES[cor()][0], a: proximaCor, d: '›' },
+            { i: '⌨️', r: 'Som de teclado', v: 'Clique ao digitar', p: 'teclado' },
+            { i: '🔄', r: 'Redefinir preferências', v: 'Voltar ao padrão', a: redefinir, d: '›' } ] },
+        { t: 'Informações Úteis', ac: 'ℹ️', v: 'Armazenamento e mais', itens: [
+            { i: '💾', r: 'Espaço utilizado', v: espaco() },
+            { i: '🧹', r: 'Limpar histórico do chat', v: 'Libera espaço neste aparelho', a: limparHistorico, d: '›' } ] },
+        { t: 'Notificações', itens: [
+            { i: '🔔', r: 'Sons de notificação', v: 'Toques e alertas sonoros', p: 'sons' },
+            { i: '📞', r: 'Receber chamadas', v: 'Permitir ligações', p: 'chamadas' } ] },
+        { t: 'Sobre', itens: [
+            { i: 'ℹ️', r: 'Versão', v: 'Guardian Shield v1.0' },
+            { i: '🚪', r: 'Sair da conta', v: '', a: () => sair(false) } ] }
+    ];
+}
+
+function itemEl(it) {
+    const d = document.createElement('div');
+    const clic = !!(it.a || it.p);
+    d.className = 'item' + (clic ? ' clic' : '');
+    d.innerHTML = '<div class="esq"><span class="icone"></span><div><div class="rotulo"></div><div class="valor"></div></div></div>'
+        + (it.p ? '<div class="toggle" role="switch"></div>' : '<span class="seta"></span>');
+    const ic = d.querySelector('.icone'); ic.textContent = it.i; if (it.c) ic.style.color = it.c;
+    d.querySelector('.rotulo').textContent = it.r;
+    d.querySelector('.valor').textContent = it.v || '';
+    if (it.p) {
+        const t = d.querySelector('.toggle'), on = pref(it.p);
+        t.classList.toggle('ativo', on); t.setAttribute('aria-checked', on);
+        d.setAttribute('aria-label', it.r);
+    } else d.querySelector('.seta').textContent = it.d || '';
+    if (clic) {
+        d.tabIndex = 0; d.setAttribute('role', 'button');
+        const agir = () => it.p ? (ls.s(P + 'pref_' + it.p, pref(it.p) ? '0' : '1'), render()) : it.a();
+        d.addEventListener('click', agir);
+        d.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); agir(); } });
+    }
+    return d;
+}
+
+function render() {
+    document.documentElement.dataset.tema = tema();
+    document.documentElement.style.setProperty('--destaque', CORES[cor()][1]);
+
+    const n = nome(), foto = ls.g('fotoPerfil'), st = STATUS[status()];
+    $('ini').textContent = n.charAt(0).toUpperCase();
+    $('fotoImg').hidden = !foto; if (foto) $('fotoImg').src = foto;
+    $('hNome').textContent = n;
+    $('hMsg').textContent = ls.g(P + 'msg') || 'Sem status';
+    $('hStatus').textContent = '● ' + st[0]; $('hStatus').style.color = st[1];
+
+    const box = $('secoes'); box.innerHTML = ''; let achou = false;
+    const casa = (it) => (it.r + ' ' + (it.v || '')).toLowerCase().includes(termo);
+    secoes().forEach((s) => {
+        const todos = termo && s.t.toLowerCase().includes(termo);
+        const lista = !termo || todos ? s.itens : s.itens.filter(casa);
+        if (!lista.length) return;
+        achou = true;
+        const sec = document.createElement('div'); sec.className = 'secao';
+        if (s.ac) {
+            const aberto = abertos.has(s.t) || !!termo;
+            const b1 = document.createElement('div'); b1.className = 'bloco';
+            b1.appendChild(itemEl({ i: s.ac, r: s.t, v: s.v, d: aberto ? '▲' : '▼',
+                a: () => { abertos.has(s.t) ? abertos.delete(s.t) : abertos.add(s.t); render(); } }));
+            sec.appendChild(b1);
+            if (aberto) {
+                const b2 = document.createElement('div'); b2.className = 'bloco';
+                lista.forEach((it) => b2.appendChild(itemEl(it))); sec.appendChild(b2);
+            }
+        } else {
+            const h = document.createElement('h3'); h.textContent = s.t; sec.appendChild(h);
+            const b = document.createElement('div'); b.className = 'bloco';
+            lista.forEach((it) => b.appendChild(itemEl(it))); sec.appendChild(b);
+        }
+        box.appendChild(sec);
+    });
+    $('vazio').hidden = achou;
+}
+
+$('hMsg').addEventListener('click', editarMsg);
+$('busca').addEventListener('input', () => { termo = $('busca').value.trim().toLowerCase(); render(); });
+
+/* ---------- Som de teclado ---------- */
+let audioCtx;
+document.addEventListener('keydown', (e) => {
+    if (e.target.tagName !== 'INPUT' || e.target.type === 'password' || e.ctrlKey || e.metaKey || !pref('teclado')) return;
+    try {
+        audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+        const o = audioCtx.createOscillator(), g = audioCtx.createGain(), t = audioCtx.currentTime;
+        o.type = 'square'; o.frequency.value = 550 + Math.random() * 350;
+        g.gain.setValueAtTime(0.04, t); g.gain.exponentialRampToValueAtTime(0.001, t + 0.025);
+        o.connect(g); g.connect(audioCtx.destination); o.start(t); o.stop(t + 0.025);
+    } catch (err) {}
+});
+
+/* ---------- Início ---------- */
+(async () => {
+    render();
+    try { const { data } = await sb.auth.getSession(); usuario = data.session ? data.session.user : null; } catch (e) {}
+    $('aviso').hidden = !!usuario;
+    if (usuario) {
+        try {
+            const { data } = await sb.from('usuarios').select('nome').eq('id', usuario.id).single();
+            if (data && data.nome) { ls.s(P + 'nome', data.nome); ls.s('usuarioNome', data.nome); }
+        } catch (e) {}
+    }
+    render();
+})();
+</script>
+</body>
+</html>
