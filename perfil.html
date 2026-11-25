@@ -18,7 +18,31 @@ h1 { font-size:1.6rem; margin-bottom:.3rem; }
 .sub { color:var(--suave); font-size:.9rem; margin-bottom:1.5rem; }
 .aviso { background:rgba(234,179,8,.12); border:1px solid rgba(234,179,8,.35); border-radius:10px; padding:.7rem 1rem; font-size:.85rem; margin-bottom:1.25rem; }
 .aviso a { color:var(--destaque); }
-.cabecalho { display:flex; align-items:center; gap:1.2rem; padding:1.5rem; background:var(--card); border:1px solid var(--borda); border-radius:14px; margin-bottom:1.5rem; }
+.cabecalho {
+    display:flex; align-items:center; gap:1.2rem; padding:1.5rem;
+    background:
+        linear-gradient(135deg, rgba(96, 165, 250, 0.15), rgba(59, 130, 246, 0.08)),
+        linear-gradient(180deg, var(--card), rgba(30, 41, 59, 0.95));
+    border:1px solid var(--borda); border-radius:14px; margin-bottom:1.5rem;
+    position: relative;
+    overflow: hidden;
+}
+/* Efeito de brilho na capa */
+.cabecalho::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 70px;
+    background: linear-gradient(90deg, rgba(96, 165, 250, 0.2), transparent 60%);
+    pointer-events: none;
+}
+/* Garante que o conteúdo fique acima da capa */
+.cabecalho > * {
+    position: relative;
+    z-index: 1;
+}
 .foto { position:relative; width:80px; height:80px; border-radius:50%; background:linear-gradient(135deg,var(--destaque),#3B82F6); display:grid; place-items:center; font-size:1.8rem; font-weight:700; color:#fff; flex-shrink:0; }
 .foto img { position:absolute; inset:0; width:100%; height:100%; border-radius:50%; object-fit:cover; }
 .cam { position:absolute; right:-4px; bottom:-4px; width:28px; height:28px; border-radius:50%; background:var(--destaque); border:2px solid var(--fundo); font-size:.7rem; z-index:1; }
