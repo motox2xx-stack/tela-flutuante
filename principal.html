@@ -610,6 +610,78 @@
             height: 100%;
             border: none;
         }
+
+        /* ✅ NOTIFICAÇÃO FLUTUANTE DE CHAMADA */
+        .notificacao-chamada {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.8);
+            background: rgba(15, 23, 42, 0.95);
+            border: 2px solid #22c55e;
+            border-radius: 20px;
+            padding: 2.5rem;
+            text-align: center;
+            z-index: 99999;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.4s ease;
+            box-shadow: 0 0 60px rgba(34, 197, 94, 0.2);
+        }
+
+        .notificacao-chamada.ativo {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translate(-50%, -50%) scale(1);
+        }
+
+        .notificacao-chamada .icone-chamada {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            animation: pulsar 1.5s infinite ease-in-out;
+        }
+
+        .notificacao-chamada h3 {
+            font-size: 1.4rem;
+            margin-bottom: 0.5rem;
+            color: white;
+        }
+
+        .notificacao-chamada .quem-chama {
+            font-size: 1.1rem;
+            color: #94a3b8;
+            margin-bottom: 1.5rem;
+        }
+
+        .notificacao-chamada .botoes-notificacao {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+        }
+
+        .notificacao-chamada button {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .notificacao-chamada .btn-aceitar {
+            background: #22c55e;
+            color: white;
+        }
+
+        .notificacao-chamada .btn-recusar {
+            background: #ef4444;
+            color: white;
+        }
+
+        @keyframes pulsar {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.7; transform: scale(1.1); }
+        }
     </style>
 </head>
 <body>
@@ -726,6 +798,19 @@
         <iframe id="iframeFlutuante" src="tela-flutuante.html" title="Tela Flutuante"></iframe>
     </div>
 
+    <!-- ✅ NOTIFICAÇÃO DE CHAMADA ENTRANTE -->
+    <div class="notificacao-chamada" id="notificacaoChamada">
+        <div class="conteudo-notificacao">
+            <div class="icone-chamada">📞</div>
+            <h3>Chamada Entrante</h3>
+            <p class="quem-chama">Amigo</p>
+            <div class="botoes-notificacao">
+                <button class="btn-aceitar" id="btnAceitarChamada">✅ Aceitar</button>
+                <button class="btn-recusar" id="btnRecusarChamada">❌ Recusar</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         // === DADOS DOS CONTATOS ===
         const dadosContatos = {
@@ -825,7 +910,8 @@
 
         document.getElementById('acaoLigar').addEventListener('click', () => {
             menuAcoes.classList.remove('ativo');
-            alert('📞 Iniciando chamada...');
+            // ✅ MOSTRA A NOTIFICAÇÃO DE CHAMADA
+            mostrarChamadaEntrante(contatoAtual || 'Amigo');
         });
         document.getElementById('acaoWebcam').addEventListener('click', () => {
             menuAcoes.classList.remove('ativo');
@@ -842,6 +928,26 @@
         document.getElementById('acaoArquivo').addEventListener('click', () => {
             menuAcoes.classList.remove('ativo');
             alert('📤 Selecionando arquivo...');
+        });
+
+        // === 📞 NOTIFICAÇÃO DE CHAMADA ENTRANTE ===
+        const notificacaoChamada = document.getElementById('notificacaoChamada');
+        const btnAceitarChamada = document.getElementById('btnAceitarChamada');
+        const btnRecusarChamada = document.getElementById('btnRecusarChamada');
+
+        function mostrarChamadaEntrante(nomeQuemChama) {
+            document.querySelector('.notificacao-chamada .quem-chama').textContent = nomeQuemChama;
+            notificacaoChamada.classList.add('ativo');
+        }
+
+        btnAceitarChamada.addEventListener('click', () => {
+            notificacaoChamada.classList.remove('ativo');
+            alert('✅ Chamada aceita! Conectando...');
+        });
+
+        btnRecusarChamada.addEventListener('click', () => {
+            notificacaoChamada.classList.remove('ativo');
+            alert('❌ Chamada recusada');
         });
 
         // === FUNÇÃO PARA ABRIR CONVERSA DE UM CONTATO ===
