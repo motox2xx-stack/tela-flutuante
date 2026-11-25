@@ -869,7 +869,7 @@
         sidebarOverlay.addEventListener('click', fecharMenu);
         menuInicio.addEventListener('click', fecharMenu);
 
-        // === BOLINHA E PAINEL FLUTUANTE ===
+        // === BOLINHA E PAINEL FLUTUANTE + JANELA SEPARADA ===
         const botaoFlutuante = document.getElementById('botaoFlutuante');
         const painelFlutuante = document.getElementById('painelFlutuante');
         const fecharPainel = document.getElementById('fecharPainel');
@@ -878,9 +878,6 @@
         function alternarPainel() {
             painelAberto = !painelAberto;
             painelFlutuante.style.display = painelAberto ? 'flex' : 'none';
-            if (textoMenuTela) {
-                textoMenuTela.textContent = painelAberto ? 'Fechar Painel' : 'Tela Flutuante';
-            }
         }
 
         botaoFlutuante.addEventListener('click', alternarPainel);
@@ -888,7 +885,7 @@
 
         menuTelaFlutuante.addEventListener('click', () => {
             fecharMenu();
-            alternarPainel();
+            window.open('tela-flutuante.html', '_blank', 'width=400,height=600,top=100,left=100');
         });
 
         // === AJUDA ===
