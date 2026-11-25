@@ -739,6 +739,15 @@
         let contatoAtual = null;
         let mensagemParaCitar = null;
 
+        // === ABRIR CONTATO PELA URL (vindo de contato.html) ===
+        window.addEventListener('load', () => {
+            const parametros = new URLSearchParams(window.location.search);
+            const nomeContato = parametros.get('contato');
+            if (nomeContato && typeof abrirConversa === 'function') {
+                abrirConversa(nomeContato);
+            }
+        });
+
         // === MENU LATERAL ===
         const menuToggleBtn = document.getElementById('menuToggleBtn');
         const sidebar = document.getElementById('sidebar');
