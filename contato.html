@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>👥 Contatos — Guardian Shield</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; border: none; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+        body { background: #0F172A; min-height: 100vh; color: #FFFFFF; padding: 20px; }
+
+        .container { max-width: 700px; margin: 0 auto; }
+
+        h1 { font-size: 1.4rem; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
+
+        .topo-acoes { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+        .btn-adicionar {
+            padding: 10px 16px; background: linear-gradient(135deg, #3b82f6, #2563eb); color: white;
+            border-radius: 8px; cursor: pointer; font-size: 0.85rem; transition: all 0.2s ease;
+        }
+        .btn-adicionar:hover { transform: translateY(-1px); }
+
+        .busca { margin-bottom: 16px; }
+        .busca input {
+            width: 100%; padding: 12px 16px 12px 40px; border-radius: 8px;
+            background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08);
+            color: white; font-size: 0.9rem; outline: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%2394a3b8' viewBox='0 0 16 16'%3E%3Cpath d='M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat; background-position: 14px center;
+        }
+        .busca input:focus { border-color: #3b82f6; }
+
+        .abas { display: flex; gap: 8px; margin-bottom: 16px; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 4px; }
+        .aba {
+            padding: 8px 14px; font-size: 0.85rem; color: #94A3B8; cursor: pointer;
+            border-bottom: 2px solid transparent; transition: all 0.2s ease;
+        }
+        .aba.ativa { color: #60A5FA; border-bottom-color: #3b82f6; }
+        .aba:hover { color: #cbd5e1; }
+
+        .lista-contatos { display: flex; flex-direction: column; gap: 8px; }
+
+        .card-contato {
+            display: flex; align-items: center; gap: 14px; padding: 14px;
+            background: rgba(255,255,255,0.03); border-radius: 10px;
+            border: 1px solid rgba(255,255,255,0.06);
+            transition: all 0.25s ease; cursor: pointer;
+        }
+        .card-contato:hover {
+            background: rgba(59, 130, 246, 0.08); border-color: rgba(59, 130, 246, 0.15); transform: translateY(-1px);
+        }
+
+        .contato-foto {
+            width: 48px; height: 48px; border-radius: 50%; background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            display: flex; align-items: center; justify-content: center; font-size: 22px; position: relative;
+            flex-shrink: 0;
+        }
+        .indicador-status {
+            position: absolute; bottom: 2px; right: 2px; width: 12px; height: 12px; border-radius: 50%;
+            border: 2px solid #0F172A;
+        }
+        .status-online { background: #22C55E; }
+        .status-ocupado { background: #F59E0B; }
+        .status-ausente { background: #64748B; }
+
+        .contato-info { flex: 1; min-width: 0; }
+        .contato-nome { font-size: 0.95rem; font-weight: 500; margin-bottom: 2px; }
+        .contato-status-texto { font-size: 0.78rem; opacity: 0.6; }
+
+        .btn-favorito {
+            font-size: 18px; background: none; border: none; cursor: pointer; padding: 6px;
+            color: #475569; transition: all 0.2s ease; flex-shrink: 0;
+        }
+        .btn-favorito.favoritado { color: #FBBF24; }
+        .btn-favorito:hover { transform: scale(1.15); }
+
+        .btn-excluir {
+            font-size: 16px; background: none; border: none; cursor: pointer; padding: 6px;
+            color: #475569; transition: all 0.2s ease; flex-shrink: 0;
+        }
+        .btn-excluir:hover { color: #EF4444; }
+
+        .vazio { text-align: center; padding: 60px 20px; opacity: 0.4; font-size: 0.9rem; }
+
+        /* MODAL */
+        .modal-fundo {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6);
+            display: none; align-items: center; justify-content: center; z-index: 1000;
+        }
+        .modal-fundo.ativo { display: flex; }
+        .modal {
+            background: #1E293B; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px;
+            padding: 24px; width: 90%; max-width: 420px;
+        }
+        .modal h3 { margin-bottom: 18px; font-size: 1.05rem; }
+        .modal label { display: block; margin-bottom: 6px; font-size: 0.85rem; opacity: 0.7; }
+        .modal input, .modal select {
+            width: 100%; padding: 10px 12px; border-radius: 6px; background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.08); color: white; font-size: 0.9rem; margin-bottom: 14px; outline: none;
+        }
+        .modal-botoes { display: flex; gap: 10px; justify-content: flex-end; margin-top: 8px; }
+        .btn-cancelar { padding: 8px 16px; background: rgba(255,255,255,0.05); color: #cbd5e1; border-radius: 6px; cursor: pointer; }
+        .btn-confirmar { padding: 8px 16px; background: #22C55E; color: white; border-radius: 6px; cursor: pointer; }
+        .btn-confirmar.excluir { background: #EF4444; }
+
+        .voltar { display: inline-flex; align-items: center; gap: 6px; color: #60A5FA; text-decoration: none; font-size: 0.85rem; margin-bottom: 16px; }
+        .voltar:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <a href="principal.html" class="voltar">← Voltar para Conversas</a>
+        <h1>👥 Meus Contatos</h1>
+
+        <div class="topo-acoes">
+            <div></div>
+            <button class="btn-adicionar" id="btnAbrirModal">➕ Adicionar Contato</button>
+        </div>
+
+        <div class="busca">
+            <input type="text" id="buscaContato" placeholder="Buscar contato...">
+        </div>
+
+        <div class="abas">
+            <div class="aba ativa" data-filtro="todos">Todos</div>
+            <div class="aba" data-filtro="online">🟢 Online</div>
+            <div class="aba" data-filtro="favoritos">⭐ Favoritos</div>
+        </div>
+
+        <div class="lista-contatos" id="listaContatos">
+            <!-- Os contatos aparecem aqui -->
+        </div>
+    </div>
+
+    <!-- MODAL ADICIONAR -->
+    <div class="modal-fundo" id="modalAdicionar">
+        <div class="modal">
+            <h3>➕ Adicionar Contato</h3>
+            <label>Nome</label>
+            <input type="text" id="novoNome" placeholder="Digite o nome...">
+            <label>Status</label>
+            <select id="novoStatus">
+                <option value="online">🟢 Disponível</option>
+                <option value="ocupado">🟡 Ocupado</option>
+                <option value="ausente">⚪ Ausente</option>
+            </select>
+            <div class="modal-botoes">
+                <button class="btn-cancelar" id="btnCancelarAdicionar">Cancelar</button>
+                <button class="btn-confirmar" id="btnSalvarContato">Salvar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL CONFIRMAR EXCLUSÃO -->
+    <div class="modal-fundo" id="modalExcluir">
+        <div class="modal">
+            <h3>🗑️ Excluir Contato</h3>
+            <p style="font-size:0.9rem; opacity:0.8; margin-bottom:20px;">Tem certeza que deseja excluir <strong id="nomeExcluir"></strong>? Esta ação não pode ser desfeita.</p>
+            <div class="modal-botoes">
+                <button class="btn-cancelar" id="btnCancelarExcluir">Cancelar</button>
+                <button class="btn-confirmar excluir" id="btnConfirmarExcluir">Sim, Excluir</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let contatos = JSON.parse(localStorage.getItem('guardianContatos')) || [
+            { id: 1, nome: 'João', status: 'online', favorito: false, iniciais: 'J' },
+            { id: 2, nome: 'Maria', status: 'ocupado', favorito: true, iniciais: 'M' },
+            { id: 3, nome: 'Equipe', status: 'online', favorito: true, iniciais: 'E' }
+        ];
+        let filtroAtual = 'todos';
+        let idParaExcluir = null;
+
+        const listaEl = document.getElementById('listaContatos');
+        const buscaEl = document.getElementById('buscaContato');
+        const abasEl = document.querySelectorAll('.aba');
+        const modalAdicionar = document.getElementById('modalAdicionar');
+        const modalExcluir = document.getElementById('modalExcluir');
+
+        function salvarContatos() {
+            localStorage.setItem('guardianContatos', JSON.stringify(contatos));
+            renderizarLista();
+        }
+
+        function getStatusTexto(status) {
+            return status === 'online' ? '● Disponível' : status === 'ocupado' ? '● Ocupado' : '● Ausente';
+        }
+
+        function renderizarLista() {
+            // ✅ ORDENAÇÃO ALFABÉTICA AQUI
+            let filtrados = [...contatos].sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'));
+            const termo = buscaEl.value.toLowerCase().trim();
+
+            if (filtroAtual === 'online') filtrados = filtrados.filter(c => c.status === 'online');
+            if (filtroAtual === 'favoritos') filtrados = filtrados.filter(c => c.favorito);
+            if (termo) filtrados = filtrados.filter(c => c.nome.toLowerCase().includes(termo));
+
+            if (filtrados.length === 0) {
+                listaEl.innerHTML = `<div class="vazio">${termo ? '🔍 Nenhum contato encontrado' : filtroAtual === 'favoritos' ? '⭐ Nenhum favorito ainda' : filtroAtual === 'online' ? '🟢 Ninguém online' : '📭 Nenhum contato ainda'}</div>`;
+                return;
+            }
+
+            listaEl.innerHTML = filtrados.map(contato => `
+                <div class="card-contato" data-id="${contato.id}">
+                    <div class="contato-foto">
+                        ${contato.iniciais}
+                        <div class="indicador-status status-${contato.status}"></div>
+                    </div>
+                    <div class="contato-info">
+                        <div class="contato-nome">${contato.nome}</div>
+                        <div class="contato-status-texto">${getStatusTexto(contato.status)}</div>
+                    </div>
+                    <button class="btn-favorito ${contato.favorito ? 'favoritado' : ''}" data-acao="favoritar" data-id="${contato.id}">★</button>
+                    <button class="btn-excluir" data-acao="excluir" data-id="${contato.id}" data-nome="${contato.nome}">🗑️</button>
+                </div>
+            `).join('');
+
+            vincularEventosCards();
+        }
+
+        function vincularEventosCards() {
+            document.querySelectorAll('.card-contato').forEach(card => {
+                const id = parseInt(card.dataset.id);
+
+                card.addEventListener('click', (e) => {
+                    if (e.target.closest('.btn-favorito') || e.target.closest('.btn-excluir')) return;
+                    window.location.href = `principal.html?contato=${encodeURIComponent(contatos.find(c=>c.id===id).nome)}`;
+                });
+            });
+
+            document.querySelectorAll('.btn-favorito').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const id = parseInt(btn.dataset.id);
+                    const contato = contatos.find(c => c.id === id);
+                    if (contato) {
+                        contato.favorito = !contato.favorito;
+                        salvarContatos();
+                    }
+                });
+            });
+
+            document.querySelectorAll('.btn-excluir').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    idParaExcluir = parseInt(btn.dataset.id);
+                    document.getElementById('nomeExcluir').textContent = btn.dataset.nome;
+                    modalExcluir.classList.add('ativo');
+                });
+            });
+        }
+
+        // Adicionar
+        document.getElementById('btnAbrirModal').addEventListener('click', () => {
+            modalAdicionar.classList.add('ativo');
+            document.getElementById('novoNome').value = '';
+            document.getElementById('novoStatus').value = 'online';
+        });
+        document.getElementById('btnCancelarAdicionar').addEventListener('click', () => {
+            modalAdicionar.classList.remove('ativo');
+        });
+        document.getElementById('btnSalvarContato').addEventListener('click', () => {
+            const nome = document.getElementById('novoNome').value.trim();
+            const status = document.getElementById('novoStatus').value;
+            if (!nome) { alert('Digite um nome!'); return; }
+            const novoId = contatos.length > 0 ? Math.max(...contatos.map(c=>c.id)) + 1 : 1;
+            contatos.push({
+                id: novoId,
+                nome: nome,
+                status: status,
+                favorito: false,
+                iniciais: nome.charAt(0).toUpperCase()
+            });
+            modalAdicionar.classList.remove('ativo');
+            salvarContatos();
+        });
+
+        // Excluir
+        document.getElementById('btnCancelarExcluir').addEventListener('click', () => {
+            modalExcluir.classList.remove('ativo');
+            idParaExcluir = null;
+        });
+        document.getElementById('btnConfirmarExcluir').addEventListener('click', () => {
+            contatos = contatos.filter(c => c.id !== idParaExcluir);
+            modalExcluir.classList.remove('ativo');
+            idParaExcluir = null;
+            salvarContatos();
+        });
+
+        // Busca
+        buscaEl.addEventListener('input', renderizarLista);
+
+        // Abas
+        abasEl.forEach(aba => {
+            aba.addEventListener('click', () => {
+                abasEl.forEach(a => a.classList.remove('ativa'));
+                aba.classList.add('ativa');
+                filtroAtual = aba.dataset.filtro;
+                renderizarLista();
+            });
+        });
+
+        renderizarLista();
+    </script>
+</body>
+</html>
