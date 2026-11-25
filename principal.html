@@ -646,10 +646,10 @@
                 <span>🪟</span>
                 <span id="textoMenuTela">Tela Flutuante</span>
             </div>
-            <div class="sidebar-item" id="menuContatos">
+            <a href="contato.html" class="sidebar-item">
                 <span>👥</span>
                 <span>Contatos</span>
-            </div>
+            </a>
             <div class="sidebar-item" id="menuAjuda">
                 <span>❓</span>
                 <span>Ajuda</span>
@@ -747,8 +747,6 @@
         const menuInicio = document.getElementById('menuInicio');
         const menuTelaFlutuante = document.getElementById('menuTelaFlutuante');
         const textoMenuTela = document.getElementById('textoMenuTela');
-        const menuContatos = document.getElementById('menuContatos');
-        const menuAjuda = document.getElementById('menuAjuda');
         const janelaFlutuante = document.getElementById('janelaFlutuante');
         const btnFecharJanela = document.getElementById('btnFecharJanela');
         const perfilNome = document.getElementById('perfilNome');
@@ -798,7 +796,7 @@
         });
 
         // === AJUDA ===
-        menuAjuda.addEventListener('click', () => {
+        document.getElementById('menuAjuda').addEventListener('click', () => {
             fecharMenu();
             alert('❌ Ajuda:\n\n• ☰ → Contatos para escolher com quem falar\n• ⋯ em mensagens → Copiar ou Responder\n• Use a busca abaixo do ☰ para encontrar mensagens\n• Botão + ao lado da digitação → Chamada, Webcam, Arquivo');
         });
@@ -1050,41 +1048,6 @@
             document.body.removeChild(textArea);
             alert('✅ Mensagem copiada!');
         }
-
-        // === ADICIONAR CONTATOS NO MENU ===
-        menuContatos.addEventListener('click', () => {
-            fecharMenu();
-            const existente = document.getElementById('modalContatosLista');
-            if (existente) existente.remove();
-
-            const menuContatosLista = document.createElement('div');
-            menuContatosLista.id = 'modalContatosLista';
-            menuContatosLista.style.cssText = `
-                position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-                background: #1E293B; border: 1px solid rgba(255,255,255,0.08);
-                border-radius: 12px; padding: 20px; z-index: 10000; min-width: 280px;
-                box-shadow: 0 10px 40px rgba(0,0,0,0.5);
-            `;
-            menuContatosLista.innerHTML = `
-                <h3 style="margin-bottom:16px; font-size:1rem; color:#fff;">👥 Contatos</h3>
-                <div style="display:flex; flex-direction:column; gap:8px;">
-                    ${Object.keys(dadosContatos).map((nome) => {
-                        const c = dadosContatos[nome];
-                        const statusCor = c.status === 'online' ? '#22C55E' : c.status === 'ocupado' ? '#F59E0B' : '#64748B';
-                        return `<button onclick="abrirConversa('${nome}'); this.closest('#modalContatosLista').remove();"
-                            style="display:flex; align-items:center; gap:10px; padding:10px 12px; background:rgba(255,255,255,0.03); border-radius:8px; color:#CBD5E1; cursor:pointer; text-align:left; width:100%; transition:all 0.2s ease;">
-                            <span style="font-size:20px;">${c.avatar}</span>
-                            <div>
-                                <div style="font-size:0.9rem; color:#fff;">${nome}</div>
-                                <div style="font-size:0.75rem; color:${statusCor}">${c.textoStatus}</div>
-                            </div>
-                        </button>`;
-                    }).join('')}
-                </div>
-                <button onclick="this.closest('#modalContatosLista').remove()" style="margin-top:14px; width:100%; padding:8px; background:rgba(255,255,255,0.05); color:#94A3B8; border-radius:6px; cursor:pointer;">Fechar</button>
-            `;
-            document.body.appendChild(menuContatosLista);
-        });
     </script>
 </body>
 </html>
