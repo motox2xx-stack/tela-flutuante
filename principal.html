@@ -5,8 +5,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Guardian Shield — Menu Principal</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; border: none; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
-        body { background: #0F172A; min-height: 100vh; overflow: hidden; color: #FFFFFF; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            border: none;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        body {
+            background: #0F172A;
+            min-height: 100vh;
+            overflow: hidden;
+            color: #FFFFFF;
+        }
 
         /* === MENU DE NAVEGAÇÃO === */
         nav {
@@ -19,21 +31,24 @@
             position: relative;
             z-index: 999;
         }
-        .menu-btn {
+
+        .menu-btn, .menu-link {
             padding: 8px 14px;
             border-radius: 6px;
             background: transparent;
-            border: none;
             color: #CBD5E1;
             cursor: pointer;
             font-size: 0.8rem;
             transition: all 0.2s ease;
+            text-decoration: none;
         }
+
         .menu-btn.ativo {
             background: rgba(59, 130, 246, 0.25);
             color: #60A5FA;
         }
-        .menu-btn:hover {
+
+        .menu-btn:hover, .menu-link:hover {
             background: rgba(255, 255, 255, 0.06);
         }
 
@@ -43,19 +58,23 @@
             height: calc(100vh - 56px);
             overflow-y: auto;
         }
+
         section {
             display: none;
             padding: 20px;
         }
+
         section#pag-inicio {
             display: block;
         }
+
         h2 {
             font-size: 1.1rem;
             margin-bottom: 20px;
             color: #FFFFFF;
         }
-        input, select {
+
+        input {
             width: 100%;
             padding: 9px 12px;
             border-radius: 6px;
@@ -64,18 +83,6 @@
             color: #FFFFFF;
             font-size: 0.85rem;
             outline: none;
-        }
-        label {
-            font-size: 0.8rem;
-            opacity: 0.7;
-            display: block;
-            margin-bottom: 5px;
-        }
-        button {
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 0.85rem;
-            transition: all 0.2s ease;
         }
 
         /* === BOTÃO FLUTUANTE FIXO === */
@@ -94,6 +101,7 @@
             cursor: pointer;
             transition: all 0.3s ease;
         }
+
         .btn-acessar-telafloat:hover {
             transform: scale(1.1);
             box-shadow: 0 6px 20px rgba(59, 130, 246, 0.5);
@@ -109,30 +117,64 @@
             backdrop-filter: blur(24px);
             border-radius: 20px;
             padding: 32px 40px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.4);
-            border: 1px solid rgba(255,255,255,0.1);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.1);
             z-index: 10000;
             text-align: center;
             opacity: 0;
             visibility: hidden;
             transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
+
         .tela-chamada-entrante.ativo {
             opacity: 1;
             transform: translate(-50%, -50%) scale(1);
             visibility: visible;
         }
-        .tela-chamada-entrante h2 { font-size: 1.3rem; margin-bottom: 8px; }
-        .tela-chamada-entrante .nome-contato { font-size: 1.5rem; font-weight: bold; color: #94a3b8; margin-bottom: 20px; }
-        .acoes-chamada { display: flex; gap: 12px; justify-content: center; margin-top: 15px; }
-        .btn-atender { background: #22c55e; color: white; padding: 10px 24px; }
-        .btn-recusar { background: #ef4444; color: white; padding: 10px 24px; }
+
+        .tela-chamada-entrante h2 {
+            font-size: 1.3rem;
+            margin-bottom: 8px;
+        }
+
+        .tela-chamada-entrante .nome-contato {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #94a3b8;
+            margin-bottom: 20px;
+        }
+
+        .acoes-chamada {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            margin-top: 15px;
+        }
+
+        .btn-atender {
+            background: #22c55e;
+            color: white;
+            padding: 10px 24px;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-recusar {
+            background: #ef4444;
+            color: white;
+            padding: 10px 24px;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+        }
 
         /* === SIMULAÇÃO NA SALA === */
         .simulacao-container {
             text-align: center;
             padding: 30px 20px;
         }
+
         .btn-ligar-sim {
             width: 140px;
             height: 140px;
@@ -145,39 +187,50 @@
             box-shadow: 0 6px 20px rgba(34, 197, 94, 0.35);
             transition: all 0.3s ease;
         }
+
         .btn-ligar-sim:hover {
             transform: scale(1.08);
             box-shadow: 0 8px 25px rgba(34, 197, 94, 0.5);
         }
+
         .btn-ligar-sim.chamando {
             background: linear-gradient(145deg, #eab308, #ca8a04);
             animation: pulsar 1s infinite;
         }
+
         .btn-ligar-sim.conectado {
             background: linear-gradient(145deg, #3b82f6, #2563eb);
             font-size: 32px;
         }
+
         @keyframes pulsar {
             0%, 100% { box-shadow: 0 0 0 0 rgba(234, 179, 8, 0.4); }
             50% { box-shadow: 0 0 0 15px rgba(234, 179, 8, 0); }
         }
+
         .status-simulacao {
             margin-top: 20px;
             padding: 12px 20px;
-            background: rgba(255,255,255,0.03);
+            background: rgba(255, 255, 255, 0.03);
             border-radius: 8px;
-            border: 1px solid rgba(255,255,255,0.08);
+            border: 1px solid rgba(255, 255, 255, 0.08);
             font-size: 0.9rem;
         }
+
         .botoes-acao {
             margin-top: 25px;
             display: flex;
             gap: 12px;
             justify-content: center;
         }
+
         .botoes-acao button {
             padding: 10px 20px;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
         }
+
         .btn-finalizar {
             background: #ef4444;
             color: white;
@@ -187,277 +240,246 @@
 </head>
 <body>
 
-<!-- 🧭 MENU PRINCIPAL -->
-<nav>
-    <button class="menu-btn ativo" data-pagina="inicio">🏠 Início</button>
-    <button class="menu-btn" data-pagina="sala">📞 Simular Chamada</button>
-    <button class="menu-btn" data-pagina="contatos">👥 Contatos</button>
-    <button class="menu-btn" data-pagina="perfil">👤 Perfil</button>
-    <button class="menu-btn" data-pagina="suporte">❓ Suporte</button>
-</nav>
+    <!-- 🧭 MENU PRINCIPAL -->
+    <nav>
+        <button class="menu-btn ativo" data-pagina="inicio">🏠 Início</button>
+        <button class="menu-btn" data-pagina="sala">📞 Simular Chamada</button>
+        <button class="menu-btn" data-pagina="contatos">👥 Contatos</button>
+        <a href="perfil.html" class="menu-link">👤 Perfil</a>
+        <button class="menu-btn" data-pagina="suporte">❓ Suporte</button>
+    </nav>
 
-<!-- 📄 ÁREA DAS PÁGINAS -->
-<main id="paginas">
+    <!-- 📄 ÁREA DAS PÁGINAS -->
+    <main id="paginas">
 
-    <!-- 🏠 PÁGINA INÍCIO -->
-    <section id="pag-inicio">
-        <h2>Bem-vindo ao Guardian Shield ✅</h2>
-        <p style="opacity:0.7; font-size:0.9rem; margin-bottom:20px;">Escolha uma aba acima para navegar.</p>
-        <div style="background:rgba(255,255,255,0.03); padding:15px; border-radius:8px; border:1px solid rgba(255,255,255,0.08);">
-            <p><strong>💡 Dica:</strong></p>
-            <p style="font-size:0.85rem; opacity:0.7; margin-top:5px;">• Vá em <strong>"📞 Simular Chamada"</strong> para testar o fluxo de ligação</p>
-            <p style="font-size:0.85rem; opacity:0.7;">• Ou clique no botão azul no canto inferior direito para abrir direto sua <strong>tela-flutuante.html</strong> na mesma página</p>
-        </div>
-    </section>
-
-    <!-- 📞 PÁGINA SIMULAR CHAMADA -->
-    <section id="pag-sala">
-        <h2 style="text-align:center;">📞 Simulação de Chamada</h2>
-        
-        <div class="simulacao-container">
-            <button id="btnLigarSim" class="btn-ligar-sim">📞</button>
-            <div class="status-simulacao" id="statusSimulacao">
-                🟢 Pronto — clique no botão para iniciar
+        <!-- 🏠 PÁGINA INÍCIO -->
+        <section id="pag-inicio">
+            <h2>Bem-vindo ao Guardian Shield ✅</h2>
+            <p style="opacity:0.7; font-size:0.9rem; margin-bottom:20px;">Escolha uma aba acima para navegar.</p>
+            <div style="background:rgba(255,255,255,0.03); padding:15px; border-radius:8px; border:1px solid rgba(255,255,255,0.08);">
+                <p><strong>💡 Dica:</strong></p>
+                <p style="font-size:0.85rem; opacity:0.7; margin-top:5px;">• Vá em <strong>"📞 Simular Chamada"</strong> para testar o fluxo de ligação</p>
+                <p style="font-size:0.85rem; opacity:0.7;">• Ou clique no botão azul no canto inferior direito para abrir direto sua <strong>tela-flutuante.html</strong> na mesma página</p>
+                <p style="font-size:0.85rem; opacity:0.7; margin-top:8px;">• Clique em <strong>"👤 Perfil"</strong> para acessar suas configurações completas</p>
             </div>
-            
-            <div class="botoes-acao">
-                <button id="btnFinalizar" class="btn-finalizar">❌ Encerrar Chamada</button>
+        </section>
+
+        <!-- 📞 PÁGINA SIMULAR CHAMADA -->
+        <section id="pag-sala">
+            <h2 style="text-align:center;">📞 Simulação de Chamada</h2>
+
+            <div class="simulacao-container">
+                <button id="btnLigarSim" class="btn-ligar-sim">📞</button>
+                <div class="status-simulacao" id="statusSimulacao">
+                    🟢 Pronto — clique no botão para iniciar
+                </div>
+
+                <div class="botoes-acao">
+                    <button id="btnFinalizar" class="btn-finalizar">❌ Encerrar Chamada</button>
+                </div>
             </div>
-        </div>
-    </section>
+        </section>
 
-    <!-- 👥 PÁGINA CONTATOS -->
-    <section id="pag-contatos">
-        <h2>👥 Meus Contatos</h2>
-        <input type="text" placeholder="Buscar contato..." id="buscaContatos">
-        <div id="listaContatos" style="margin-top:15px;">
-            <p style="opacity:0.4; font-size:0.85rem; text-align:center; padding:20px;">Nenhum contato ainda</p>
-        </div>
-    </section>
+        <!-- 👥 PÁGINA CONTATOS -->
+        <section id="pag-contatos">
+            <h2>👥 Meus Contatos</h2>
+            <input type="text" placeholder="Buscar contato..." id="buscaContatos">
+            <div id="listaContatos" style="margin-top:15px;">
+                <p style="opacity:0.4; font-size:0.85rem; text-align:center; padding:20px;">Nenhum contato ainda</p>
+            </div>
+        </section>
 
-    <!-- 👤 PÁGINA PERFIL -->
-    <section id="pag-perfil">
-        <h2>👤 Meu Perfil</h2>
-        <div style="margin-bottom:15px;">
-            <label for="meuNomePerfil">Seu Nome</label>
-            <input type="text" id="meuNomePerfil" placeholder="Digite seu nome...">
-        </div>
-        <div style="margin-bottom:20px;">
-            <label for="meuStatus">Status</label>
-            <select id="meuStatus">
-                <option value="disponivel">🟢 Disponível</option>
-                <option value="ocupado">🟡 Ocupado</option>
-                <option value="ausente">⚪ Ausente</option>
-            </select>
-        </div>
-        <button id="salvarPerfil" style="padding:9px 18px; background:#3b82f6; color:white;">Salvar Alterações</button>
-    </section>
+        <!-- ❓ PÁGINA SUPORTE -->
+        <section id="pag-suporte">
+            <h2>❓ Suporte</h2>
+            <div style="font-size:0.85rem; line-height:1.7; opacity:0.8;">
+                <p><strong>📞 Simulação:</strong> Vá em "Simular Chamada", clique no botão verde e atenda para abrir sua janela flutuante sobre a tela.</p>
+                <p><strong>🔘 Botão rápido:</strong> O botão azul no canto inferior direito abre a <code>tela-flutuante.html</code> na mesma aba.</p>
+                <p><strong>👤 Perfil:</strong> Clique em "Perfil" no menu para acessar suas configurações completas.</p>
+                <p style="margin-top:20px; opacity:0.4;">Versão 1.0 — Simulação de Chamada</p>
+            </div>
+        </section>
+    </main>
 
-    <!-- ❓ PÁGINA SUPORTE -->
-    <section id="pag-suporte">
-        <h2>❓ Suporte</h2>
-        <div style="font-size:0.85rem; line-height:1.7; opacity:0.8;">
-            <p><strong>📞 Simulação:</strong> Vá em "Simular Chamada", clique no botão verde e atenda para abrir sua janela flutuante sobre a tela.</p>
-            <p><strong>🔘 Botão rápido:</strong> O botão azul no canto inferior direito abre a <code>tela-flutuante.html</code> na mesma aba.</p>
-            <p style="margin-top:20px; opacity:0.4;">Versão 1.0 — Simulação de Chamada</p>
+    <!-- 🔘 BOTÃO FLUTUANTE — ABRIR SUA TELA DIRETO -->
+    <button class="btn-acessar-telafloat" id="btnAbrirTelaFloat" title="Abrir Tela Flutuante">📋</button>
+
+    <!-- 📞 TELA DE CHAMADA ENTRANTE -->
+    <div class="tela-chamada-entrante" id="telaChamadaEntrante">
+        <h2>🔔 Chamada Entrante</h2>
+        <div class="nome-contato">Ana Albuquerque</div>
+        <p style="font-size:0.9rem; opacity:0.6;" id="textoAguardando">Aguardando atendimento...</p>
+        <div class="acoes-chamada">
+            <button class="btn-atender" id="btnAtender">📤 Atender</button>
+            <button class="btn-recusar" id="btnRecusar">📥 Recusar</button>
         </div>
-    </section>
-</main>
-
-<!-- 🔘 BOTÃO FLUTUANTE — ABRIR SUA TELA DIRETO -->
-<button class="btn-acessar-telafloat" id="btnAbrirTelaFloat" title="Abrir Tela Flutuante">📋</button>
-
-<!-- 📞 TELA DE CHAMADA ENTRANTE -->
-<div class="tela-chamada-entrante" id="telaChamadaEntrante">
-    <h2>🔔 Chamada Entrante</h2>
-    <div class="nome-contato">Ana Albuquerque</div>
-    <p style="font-size:0.9rem; opacity:0.6;" id="textoAguardando">Aguardando atendimento...</p>
-    <div class="acoes-chamada">
-        <button class="btn-atender" id="btnAtender">📤 Atender</button>
-        <button class="btn-recusar" id="btnRecusar">📥 Recusar</button>
     </div>
-</div>
 
-<!-- 🪟 JANELA FLUTUANTE DA SALA DE CHAMADA (MESMA PÁGINA) -->
-<div id="janelaSalaP2P" style="
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 90%;
-    height: 85%;
-    max-width: 900px;
-    border-radius: 16px;
-    border: 1px solid rgba(255,255,255,0.1);
-    box-shadow: 0 10px 40px rgba(0,0,0,0.5);
-    background: #0F172A;
-    z-index: 10001;
-    display: none;
-    flex-direction: column;
-    overflow: hidden;
-">
-    <!-- Cabeçalho -->
-    <div style="
-        padding: 10px 16px;
-        background: rgba(0,0,0,0.3);
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        border-bottom: 1px solid rgba(255,255,255,0.08);
+    <!-- 🪟 JANELA FLUTUANTE DA SALA DE CHAMADA (MESMA PÁGINA) -->
+    <div id="janelaSalaP2P" style="
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 90%;
+        height: 85%;
+        max-width: 900px;
+        border-radius: 16px;
+        border: 1px solid rgba(255,255,255,0.1);
+        box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+        background: #0F172A;
+        z-index: 10001;
+        display: none;
+        flex-direction: column;
+        overflow: hidden;
     ">
-        <span style="font-size: 0.9rem; font-weight: 500;">📞 Sala de Chamada P2P</span>
-        <button onclick="fecharSalaP2P()" style="
-            background: #ef4444;
-            color: white;
-            border: none;
-            border-radius: 50%;
-            width: 28px;
-            height: 28px;
-            font-size: 16px;
-            cursor: pointer;
+        <!-- Cabeçalho -->
+        <div style="
+            padding: 10px 16px;
+            background: rgba(0,0,0,0.3);
             display: flex;
+            justify-content: space-between;
             align-items: center;
-            justify-content: center;
-        ">×</button>
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+        ">
+            <span style="font-size: 0.9rem; font-weight: 500;">📞 Sala de Chamada P2P</span>
+            <button onclick="fecharSalaP2P()" style="
+                background: #ef4444;
+                color: white;
+                border: none;
+                border-radius: 50%;
+                width: 28px;
+                height: 28px;
+                font-size: 16px;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            ">×</button>
+        </div>
+        <!-- Carrega a sua tela-flutuante.html dentro -->
+        <iframe id="iframeSalaP2P" src="tela-flutuante.html" style="
+            width: 100%;
+            height: 100%;
+            border: none;
+        " title="Sala de Chamada P2P"></iframe>
     </div>
-    <!-- Carrega a sua tela-flutuante.html dentro -->
-    <iframe id="iframeSalaP2P" src="tela-flutuante.html" style="
-        width: 100%;
-        height: 100%;
-        border: none;
-    " title="Sala de Chamada P2P"></iframe>
-</div>
 
-<script>
-// === 🧭 NAVEGAÇÃO DO MENU ===
-const botoesMenu = document.querySelectorAll('.menu-btn');
+    <script>
+        // === 🧭 NAVEGAÇÃO DO MENU ===
+        const botoesMenu = document.querySelectorAll('.menu-btn');
 
-botoesMenu.forEach(btn => {
-    btn.addEventListener('click', () => {
-        botoesMenu.forEach(b => b.classList.remove('ativo'));
-        btn.classList.add('ativo');
-        document.querySelectorAll('#paginas > section').forEach(p => p.style.display = 'none');
-        document.getElementById(`pag-${btn.dataset.pagina}`).style.display = 'block';
-    });
-});
+        botoesMenu.forEach((btn) => {
+            btn.addEventListener('click', () => {
+                botoesMenu.forEach((b) => b.classList.remove('ativo'));
+                btn.classList.add('ativo');
+                document.querySelectorAll('#paginas > section').forEach((p) => {
+                    p.style.display = 'none';
+                });
+                document.getElementById(`pag-${btn.dataset.pagina}`).style.display = 'block';
+            });
+        });
 
-// === 👤 SALVAR PERFIL ===
-const nomePerfil = document.getElementById('meuNomePerfil');
-const statusPerfil = document.getElementById('meuStatus');
-const salvarPerfil = document.getElementById('salvarPerfil');
+        // === 🪟 ABRIR E FECHAR SALA P2P NA MESMA PÁGINA ===
+        function abrirSalaP2P() {
+            document.getElementById('janelaSalaP2P').style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        }
 
-nomePerfil.value = localStorage.getItem('meuNome') || '';
-statusPerfil.value = localStorage.getItem('meuStatus') || 'disponivel';
+        function fecharSalaP2P() {
+            document.getElementById('janelaSalaP2P').style.display = 'none';
+            document.body.style.overflow = '';
+        }
 
-salvarPerfil.addEventListener('click', () => {
-    localStorage.setItem('meuNome', nomePerfil.value);
-    localStorage.setItem('meuStatus', statusPerfil.value);
-    salvarPerfil.textContent = '✓ Salvo!';
-    setTimeout(() => salvarPerfil.textContent = 'Salvar Alterações', 1500);
-});
+        // === 🔘 BOTÃO RÁPIDO — ABRE SUA TELA NA MESMA PÁGINA ===
+        const btnAbrirTelaFloat = document.getElementById('btnAbrirTelaFloat');
+        btnAbrirTelaFloat.addEventListener('click', () => {
+            abrirSalaP2P();
+        });
 
-// === 🪟 ABRIR E FECHAR SALA P2P NA MESMA PÁGINA ===
-function abrirSalaP2P() {
-    document.getElementById('janelaSalaP2P').style.display = 'flex';
-    document.body.style.overflow = 'hidden';
-}
+        // === 📞 SIMULAÇÃO DE CHAMADA ===
+        const telaChamadaEntrante = document.getElementById('telaChamadaEntrante');
+        const textoAguardando = document.getElementById('textoAguardando');
+        const btnAtender = document.getElementById('btnAtender');
+        const btnRecusar = document.getElementById('btnRecusar');
+        const btnLigarSim = document.getElementById('btnLigarSim');
+        const statusSimulacao = document.getElementById('statusSimulacao');
+        const btnFinalizar = document.getElementById('btnFinalizar');
 
-function fecharSalaP2P() {
-    document.getElementById('janelaSalaP2P').style.display = 'none';
-    document.body.style.overflow = '';
-}
+        let cron;
+        let segundos = 0;
+        let chamadaAtiva = false;
 
-// === 🔘 BOTÃO RÁPIDO — ABRE SUA TELA NA MESMA PÁGINA ===
-const btnAbrirTelaFloat = document.getElementById('btnAbrirTelaFloat');
-btnAbrirTelaFloat.addEventListener('click', () => {
-    abrirSalaP2P();
-});
+        function formatarTempo(seg) {
+            const m = Math.floor(seg / 60).toString().padStart(2, '0');
+            const s = (seg % 60).toString().padStart(2, '0');
+            return `${m}:${s}`;
+        }
 
-// === 📞 SIMULAÇÃO DE CHAMADA ===
-const telaChamadaEntrante = document.getElementById('telaChamadaEntrante');
-const textoAguardando = document.getElementById('textoAguardando');
-const btnAtender = document.getElementById('btnAtender');
-const btnRecusar = document.getElementById('btnRecusar');
-const btnLigarSim = document.getElementById('btnLigarSim');
-const statusSimulacao = document.getElementById('statusSimulacao');
-const btnFinalizar = document.getElementById('btnFinalizar');
+        btnLigarSim.addEventListener('click', () => {
+            if (!chamadaAtiva) {
+                iniciarChamada();
+            }
+        });
 
-let cron;
-let segundos = 0;
-let chamadaAtiva = false;
+        function iniciarChamada() {
+            btnLigarSim.classList.add('chamando');
+            btnLigarSim.innerHTML = '⏳';
+            statusSimulacao.innerHTML = '📞 Chamando... tocando...';
 
-function formatarTempo(seg) {
-    const m = Math.floor(seg / 60).toString().padStart(2, '0');
-    const s = (seg % 60).toString().padStart(2, '0');
-    return `${m}:${s}`;
-}
+            setTimeout(() => {
+                btnLigarSim.classList.remove('chamando');
+                telaChamadaEntrante.classList.add('ativo');
+                textoAguardando.textContent = 'Tocando do outro lado...';
+                statusSimulacao.innerHTML = '🔔 Chamada entrante — aguardando atendimento';
+            }, 1500);
+        }
 
-btnLigarSim.addEventListener('click', () => {
-    if (!chamadaAtiva) {
-        iniciarChamada();
-    }
-});
+        // ATENDER CHAMADA -> ABRE NA MESMA PÁGINA
+        btnAtender.addEventListener('click', () => {
+            telaChamadaEntrante.classList.remove('ativo');
 
-function iniciarChamada() {
-    btnLigarSim.classList.add('chamando');
-    btnLigarSim.innerHTML = '⏳';
-    statusSimulacao.innerHTML = '📞 Chamando... tocando...';
-    
-    setTimeout(() => {
-        btnLigarSim.classList.remove('chamando');
-        telaChamadaEntrante.classList.add('ativo');
-        textoAguardando.textContent = 'Tocando do outro lado...';
-        statusSimulacao.innerHTML = '🔔 Chamada entrante — aguardando atendimento';
-    }, 1500);
-}
+            btnLigarSim.classList.remove('chamando');
+            btnLigarSim.classList.add('conectado');
+            btnLigarSim.innerHTML = '✓';
+            btnFinalizar.style.display = 'inline-block';
+            chamadaAtiva = true;
 
-// ATENDER CHAMADA -> ABRE NA MESMA PÁGINA
-btnAtender.addEventListener('click', () => {
-    telaChamadaEntrante.classList.remove('ativo');
-    
-    btnLigarSim.classList.remove('chamando');
-    btnLigarSim.classList.add('conectado');
-    btnLigarSim.innerHTML = '✓';
-    btnFinalizar.style.display = 'inline-block';
-    chamadaAtiva = true;
+            abrirSalaP2P();
 
-    // Abre o seu design completo por cima da página principal
-    abrirSalaP2P();
+            segundos = 0;
+            statusSimulacao.innerHTML = `🟢 Em chamada (${formatarTempo(segundos)}) — Janela flutuante aberta!`;
+            cron = setInterval(() => {
+                segundos++;
+                statusSimulacao.innerHTML = `🟢 Em chamada (${formatarTempo(segundos)}) — Janela flutuante aberta!`;
+            }, 1000);
+        });
 
-    // Inicia cronômetro no status da sala
-    segundos = 0;
-    statusSimulacao.innerHTML = `🟢 Em chamada (${formatarTempo(segundos)}) — Janela flutuante aberta!`;
-    cron = setInterval(() => {
-        segundos++;
-        statusSimulacao.innerHTML = `🟢 Em chamada (${formatarTempo(segundos)}) — Janela flutuante aberta!`;
-    }, 1000);
-});
+        // RECUSAR CHAMADA
+        btnRecusar.addEventListener('click', () => {
+            telaChamadaEntrante.classList.remove('ativo');
+            btnLigarSim.classList.remove('chamando');
+            btnLigarSim.innerHTML = '📞';
+            statusSimulacao.innerHTML = '🔴 Chamada recusada';
+            setTimeout(() => {
+                statusSimulacao.innerHTML = '🟢 Pronto — clique no botão para iniciar';
+            }, 2500);
+        });
 
-// RECUSAR CHAMADA
-btnRecusar.addEventListener('click', () => {
-    telaChamadaEntrante.classList.remove('ativo');
-    btnLigarSim.classList.remove('chamando');
-    btnLigarSim.innerHTML = '📞';
-    statusSimulacao.innerHTML = '🔴 Chamada recusada';
-    setTimeout(() => {
-        statusSimulacao.innerHTML = '🟢 Pronto — clique no botão para iniciar';
-    }, 2500);
-});
-
-// ENCERRAR CHAMADA
-btnFinalizar.addEventListener('click', () => {
-    clearInterval(cron);
-    fecharSalaP2P();
-    btnLigarSim.classList.remove('conectado');
-    btnLigarSim.innerHTML = '📞';
-    btnFinalizar.style.display = 'none';
-    statusSimulacao.innerHTML = `🔴 Chamada encerrada — Duração: ${formatarTempo(segundos)}`;
-    chamadaAtiva = false;
-    setTimeout(() => {
-        statusSimulacao.innerHTML = '🟢 Pronto — clique no botão para iniciar';
-    }, 3000);
-});
-</script>
+        // ENCERRAR CHAMADA
+        btnFinalizar.addEventListener('click', () => {
+            clearInterval(cron);
+            fecharSalaP2P();
+            btnLigarSim.classList.remove('conectado');
+            btnLigarSim.innerHTML = '📞';
+            btnFinalizar.style.display = 'none';
+            statusSimulacao.innerHTML = `🔴 Chamada encerrada — Duração: ${formatarTempo(segundos)}`;
+            chamadaAtiva = false;
+            setTimeout(() => {
+                statusSimulacao.innerHTML = '🟢 Pronto — clique no botão para iniciar';
+            }, 3000);
+        });
+    </script>
 
 </body>
 </html>
