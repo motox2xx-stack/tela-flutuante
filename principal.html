@@ -736,60 +736,69 @@
         </div>
     </div>
 
-    <!-- ✅ PAINEL FLUTUANTE DE CONTROLE -->
+    <!-- ✅ BOLINHA FLUTUANTE -->
+    <div id="botaoFlutuante" style="
+        position: fixed;
+        bottom: 24px;
+        right: 24px;
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background: radial-gradient(circle, #3B82F6 0%, #1D4ED8 100%);
+        border: 3px solid rgba(255,255,255,0.2);
+        box-shadow: 0 4px 20px rgba(59, 130, 246, 0.4);
+        z-index: 10000;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+        transition: all 0.3s ease;
+    ">👤</div>
+
+    <!-- ✅ PAINEL FLUTUANTE -->
     <div id="painelFlutuante" style="
         position: fixed;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
+        bottom: 100px;
+        right: 24px;
         background: rgba(15, 23, 42, 0.95);
         border: 1px solid rgba(255, 255, 255, 0.08);
         border-radius: 16px;
-        padding: 1.5rem;
+        padding: 1.25rem;
         z-index: 10001;
         display: none;
         flex-direction: column;
-        gap: 1rem;
-        min-width: 300px;
+        gap: 0.85rem;
+        width: 300px;
         box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
     ">
-        <!-- Cabeçalho -->
-        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 0.75rem;">
-            <span style="font-weight: 600; font-size: 0.95rem;">🎛️ Sala P2P</span>
-            <button id="fecharPainel" style="background: transparent; border: none; color: #94A3B8; font-size: 18px; cursor: pointer; width: 28px; height: 28px; border-radius: 6px;">×</button>
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span style="font-weight: 600; font-size: 0.9rem;">🎛️ Sala P2P</span>
+            <button id="fecharPainel" style="background: transparent; border: none; color: #94A3B8; font-size: 20px; cursor: pointer; line-height: 1;">×</button>
         </div>
-
-        <!-- Status de conexão -->
-        <div style="text-align: center; padding: 0.5rem 0;">
-            <div style="display: flex; justify-content: center; gap: 1rem; margin-bottom: 0.75rem;">
-                <div style="width: 56px; height: 56px; border-radius: 50%; background: rgba(59,130,246,0.3); display: flex; align-items: center; justify-content: center; font-size: 24px; border: 3px solid #3B82F6;">V</div>
-                <div style="width: 56px; height: 56px; border-radius: 50%; background: rgba(148,163,184,0.2); display: flex; align-items: center; justify-content: center; font-size: 24px; border: 3px solid #475569;">A</div>
-            </div>
-            <p style="font-size: 0.85rem; color: #CBD5E1;">Você ↔ Amigo <span style="color: #22C55E;">● Conectado</span></p>
-            <p style="font-size: 0.8rem; color: #94A3B8; margin-top: 0.25rem;">Seu status: <span style="color: #22C55E;">● Disponível</span></p>
+        <div style="display: flex; justify-content: center; gap: 1rem; padding: 0.5rem 0;">
+            <div style="width: 48px; height: 48px; border-radius: 50%; background: rgba(59,130,246,0.3); display: flex; align-items: center; justify-content: center; font-size: 20px; border: 2px solid #3B82F6;">V</div>
+            <div style="width: 48px; height: 48px; border-radius: 50%; background: rgba(148,163,184,0.2); display: flex; align-items: center; justify-content: center; font-size: 20px; border: 2px solid #475569;">A</div>
         </div>
-
-        <!-- Botões de controle -->
+        <p style="text-align:center; font-size:0.8rem; color:#CBD5E1; margin:-0.5rem 0 0.5rem;">Você ↔ Amigo <span style="color:#22C55E;">● Conectado</span></p>
         <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.5rem;">
-            <button style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; padding: 0.75rem 0.5rem; color: #CBD5E1; cursor: pointer; font-size: 0.75rem; transition: all 0.2s;" onmouseover="this.style.background='rgba(59,130,246,0.15)'" onmouseout="this.style.background='rgba(255,255,255,0.03)'">👥<br>Contatos</button>
-            <button style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; padding: 0.75rem 0.5rem; color: #CBD5E1; cursor: pointer; font-size: 0.75rem; transition: all 0.2s;" onmouseover="this.style.background='rgba(59,130,246,0.15)'" onmouseout="this.style.background='rgba(255,255,255,0.03)'">💬<br>Chat</button>
-            <button style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; padding: 0.75rem 0.5rem; color: #CBD5E1; cursor: pointer; font-size: 0.75rem; transition: all 0.2s;" onmouseover="this.style.background='rgba(59,130,246,0.15)'" onmouseout="this.style.background='rgba(255,255,255,0.03)'">🔇<br>Mudo</button>
-            <button style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; padding: 0.75rem 0.5rem; color: #CBD5E1; cursor: pointer; font-size: 0.75rem; transition: all 0.2s;" onmouseover="this.style.background='rgba(59,130,246,0.15)'" onmouseout="this.style.background='rgba(255,255,255,0.03)'">🔒<br>Travar</button>
-            <button style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; padding: 0.75rem 0.5rem; color: #CBD5E1; cursor: pointer; font-size: 0.75rem; transition: all 0.2s;" onmouseover="this.style.background='rgba(59,130,246,0.15)'" onmouseout="this.style.background='rgba(255,255,255,0.03)'">📷<br>Câmera</button>
-            <button style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; padding: 0.75rem 0.5rem; color: #CBD5E1; cursor: pointer; font-size: 0.75rem; transition: all 0.2s;" onmouseover="this.style.background='rgba(59,130,246,0.15)'" onmouseout="this.style.background='rgba(255,255,255,0.03)'">🖥️<br>Tela</button>
-            <button style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; padding: 0.75rem 0.5rem; color: #CBD5E1; cursor: pointer; font-size: 0.75rem; transition: all 0.2s;" onmouseover="this.style.background='rgba(59,130,246,0.15)'" onmouseout="this.style.background='rgba(255,255,255,0.03)'">📸<br>Foto</button>
-            <button style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; padding: 0.75rem 0.5rem; color: #EF4444; cursor: pointer; font-size: 0.75rem; transition: all 0.2s;" onmouseover="this.style.background='rgba(239,68,68,0.15)'" onmouseout="this.style.background='rgba(255,255,255,0.03)'">🚪<br>Sair</button>
+            <button style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; padding: 0.6rem 0.3rem; color: #CBD5E1; cursor: pointer; font-size: 0.7rem;">👥<br>Contatos</button>
+            <button style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; padding: 0.6rem 0.3rem; color: #CBD5E1; cursor: pointer; font-size: 0.7rem;">💬<br>Chat</button>
+            <button style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; padding: 0.6rem 0.3rem; color: #CBD5E1; cursor: pointer; font-size: 0.7rem;">🔇<br>Mudo</button>
+            <button style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; padding: 0.6rem 0.3rem; color: #CBD5E1; cursor: pointer; font-size: 0.7rem;">🔒<br>Travar</button>
+            <button style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; padding: 0.6rem 0.3rem; color: #CBD5E1; cursor: pointer; font-size: 0.7rem;">📷<br>Câmera</button>
+            <button style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; padding: 0.6rem 0.3rem; color: #CBD5E1; cursor: pointer; font-size: 0.7rem;">🖥️<br>Tela</button>
+            <button style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; padding: 0.6rem 0.3rem; color: #CBD5E1; cursor: pointer; font-size: 0.7rem;">📸<br>Foto</button>
+            <button style="background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.2); border-radius: 8px; padding: 0.6rem 0.3rem; color: #EF4444; cursor: pointer; font-size: 0.7rem;">🚪<br>Sair</button>
         </div>
-
-        <!-- Volume -->
-        <div style="display: flex; align-items: center; gap: 0.5rem; margin-top: 0.25rem;">
-            <span style="font-size: 14px;">🔊</span>
-            <input type="range" style="flex:1; accent-color: #3B82F6;" value="75">
-            <span style="font-size: 0.75rem; color: #94A3B8; width: 30px; text-align: right;">75%</span>
+        <div style="display:flex; align-items:center; gap:0.5rem; margin-top:0.25rem;">
+            <span>🔊</span>
+            <input type="range" style="flex:1; accent-color:#3B82F6;" value="75">
+            <span style="font-size:0.75rem; color:#94A3B8; width:35px; text-align:right;">75%</span>
         </div>
     </div>
 
-    <!-- ✅ NOTIFICAÇÃO DE CHAMADA ENTRANTE -->
+    <!-- ✅ NOTIFICAÇÃO FLUTUANTE DE CHAMADA -->
     <div class="notificacao-chamada" id="notificacaoChamada">
         <div class="conteudo-notificacao">
             <div class="icone-chamada">📞</div>
@@ -860,7 +869,8 @@
         sidebarOverlay.addEventListener('click', fecharMenu);
         menuInicio.addEventListener('click', fecharMenu);
 
-        // === PAINEL FLUTUANTE ===
+        // === BOLINHA E PAINEL FLUTUANTE ===
+        const botaoFlutuante = document.getElementById('botaoFlutuante');
         const painelFlutuante = document.getElementById('painelFlutuante');
         const fecharPainel = document.getElementById('fecharPainel');
         let painelAberto = false;
@@ -868,15 +878,18 @@
         function alternarPainel() {
             painelAberto = !painelAberto;
             painelFlutuante.style.display = painelAberto ? 'flex' : 'none';
-            textoMenuTela.textContent = painelAberto ? 'Fechar Painel' : 'Tela Flutuante';
+            if (textoMenuTela) {
+                textoMenuTela.textContent = painelAberto ? 'Fechar Painel' : 'Tela Flutuante';
+            }
         }
+
+        botaoFlutuante.addEventListener('click', alternarPainel);
+        fecharPainel.addEventListener('click', alternarPainel);
 
         menuTelaFlutuante.addEventListener('click', () => {
             fecharMenu();
             alternarPainel();
         });
-
-        fecharPainel.addEventListener('click', alternarPainel);
 
         // === AJUDA ===
         document.getElementById('menuAjuda').addEventListener('click', () => {
