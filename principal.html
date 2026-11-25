@@ -558,59 +558,6 @@
             color: #60A5FA;
         }
 
-        /* TELA FLUTUANTE */
-        #janelaFlutuante {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 90%;
-            height: 85%;
-            max-width: 900px;
-            border-radius: 16px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
-            background: #0F172A;
-            z-index: 10001;
-            display: none;
-            flex-direction: column;
-            overflow: hidden;
-        }
-
-        .janela-cabecalho {
-            padding: 10px 16px;
-            background: rgba(0, 0, 0, 0.3);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-        }
-
-        .janela-cabecalho span {
-            font-size: 0.9rem;
-            font-weight: 500;
-        }
-
-        .btn-fechar-janela {
-            background: #EF4444;
-            color: white;
-            border: none;
-            border-radius: 50%;
-            width: 28px;
-            height: 28px;
-            font-size: 16px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        #iframeFlutuante {
-            width: 100%;
-            height: 100%;
-            border: none;
-        }
-
         /* ✅ NOTIFICAÇÃO FLUTUANTE DE CHAMADA */
         .notificacao-chamada {
             position: fixed;
@@ -789,13 +736,57 @@
         </div>
     </div>
 
-    <!-- JANELA FLUTUANTE -->
-    <div id="janelaFlutuante">
-        <div class="janela-cabecalho">
-            <span>🪟 Tela Flutuante — Sala P2P</span>
-            <button class="btn-fechar-janela" id="btnFecharJanela" title="Fechar">×</button>
+    <!-- ✅ PAINEL FLUTUANTE DE CONTROLE -->
+    <div id="painelFlutuante" style="
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: rgba(15, 23, 42, 0.95);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 16px;
+        padding: 1.5rem;
+        z-index: 10001;
+        display: none;
+        flex-direction: column;
+        gap: 1rem;
+        min-width: 300px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+    ">
+        <!-- Cabeçalho -->
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 0.75rem;">
+            <span style="font-weight: 600; font-size: 0.95rem;">🎛️ Sala P2P</span>
+            <button id="fecharPainel" style="background: transparent; border: none; color: #94A3B8; font-size: 18px; cursor: pointer; width: 28px; height: 28px; border-radius: 6px;">×</button>
         </div>
-        <iframe id="iframeFlutuante" src="tela-flutuante.html" title="Tela Flutuante"></iframe>
+
+        <!-- Status de conexão -->
+        <div style="text-align: center; padding: 0.5rem 0;">
+            <div style="display: flex; justify-content: center; gap: 1rem; margin-bottom: 0.75rem;">
+                <div style="width: 56px; height: 56px; border-radius: 50%; background: rgba(59,130,246,0.3); display: flex; align-items: center; justify-content: center; font-size: 24px; border: 3px solid #3B82F6;">V</div>
+                <div style="width: 56px; height: 56px; border-radius: 50%; background: rgba(148,163,184,0.2); display: flex; align-items: center; justify-content: center; font-size: 24px; border: 3px solid #475569;">A</div>
+            </div>
+            <p style="font-size: 0.85rem; color: #CBD5E1;">Você ↔ Amigo <span style="color: #22C55E;">● Conectado</span></p>
+            <p style="font-size: 0.8rem; color: #94A3B8; margin-top: 0.25rem;">Seu status: <span style="color: #22C55E;">● Disponível</span></p>
+        </div>
+
+        <!-- Botões de controle -->
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.5rem;">
+            <button style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; padding: 0.75rem 0.5rem; color: #CBD5E1; cursor: pointer; font-size: 0.75rem; transition: all 0.2s;" onmouseover="this.style.background='rgba(59,130,246,0.15)'" onmouseout="this.style.background='rgba(255,255,255,0.03)'">👥<br>Contatos</button>
+            <button style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; padding: 0.75rem 0.5rem; color: #CBD5E1; cursor: pointer; font-size: 0.75rem; transition: all 0.2s;" onmouseover="this.style.background='rgba(59,130,246,0.15)'" onmouseout="this.style.background='rgba(255,255,255,0.03)'">💬<br>Chat</button>
+            <button style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; padding: 0.75rem 0.5rem; color: #CBD5E1; cursor: pointer; font-size: 0.75rem; transition: all 0.2s;" onmouseover="this.style.background='rgba(59,130,246,0.15)'" onmouseout="this.style.background='rgba(255,255,255,0.03)'">🔇<br>Mudo</button>
+            <button style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; padding: 0.75rem 0.5rem; color: #CBD5E1; cursor: pointer; font-size: 0.75rem; transition: all 0.2s;" onmouseover="this.style.background='rgba(59,130,246,0.15)'" onmouseout="this.style.background='rgba(255,255,255,0.03)'">🔒<br>Travar</button>
+            <button style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; padding: 0.75rem 0.5rem; color: #CBD5E1; cursor: pointer; font-size: 0.75rem; transition: all 0.2s;" onmouseover="this.style.background='rgba(59,130,246,0.15)'" onmouseout="this.style.background='rgba(255,255,255,0.03)'">📷<br>Câmera</button>
+            <button style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; padding: 0.75rem 0.5rem; color: #CBD5E1; cursor: pointer; font-size: 0.75rem; transition: all 0.2s;" onmouseover="this.style.background='rgba(59,130,246,0.15)'" onmouseout="this.style.background='rgba(255,255,255,0.03)'">🖥️<br>Tela</button>
+            <button style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; padding: 0.75rem 0.5rem; color: #CBD5E1; cursor: pointer; font-size: 0.75rem; transition: all 0.2s;" onmouseover="this.style.background='rgba(59,130,246,0.15)'" onmouseout="this.style.background='rgba(255,255,255,0.03)'">📸<br>Foto</button>
+            <button style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; padding: 0.75rem 0.5rem; color: #EF4444; cursor: pointer; font-size: 0.75rem; transition: all 0.2s;" onmouseover="this.style.background='rgba(239,68,68,0.15)'" onmouseout="this.style.background='rgba(255,255,255,0.03)'">🚪<br>Sair</button>
+        </div>
+
+        <!-- Volume -->
+        <div style="display: flex; align-items: center; gap: 0.5rem; margin-top: 0.25rem;">
+            <span style="font-size: 14px;">🔊</span>
+            <input type="range" style="flex:1; accent-color: #3B82F6;" value="75">
+            <span style="font-size: 0.75rem; color: #94A3B8; width: 30px; text-align: right;">75%</span>
+        </div>
     </div>
 
     <!-- ✅ NOTIFICAÇÃO DE CHAMADA ENTRANTE -->
@@ -841,8 +832,6 @@
         const menuInicio = document.getElementById('menuInicio');
         const menuTelaFlutuante = document.getElementById('menuTelaFlutuante');
         const textoMenuTela = document.getElementById('textoMenuTela');
-        const janelaFlutuante = document.getElementById('janelaFlutuante');
-        const btnFecharJanela = document.getElementById('btnFecharJanela');
         const perfilNome = document.getElementById('perfilNome');
         const perfilAvatar = document.getElementById('perfilAvatar');
         const perfilStatus = document.getElementById('perfilStatus');
@@ -871,23 +860,23 @@
         sidebarOverlay.addEventListener('click', fecharMenu);
         menuInicio.addEventListener('click', fecharMenu);
 
-        // === TELA FLUTUANTE ===
-        let telaFlutuanteAberta = false;
+        // === PAINEL FLUTUANTE ===
+        const painelFlutuante = document.getElementById('painelFlutuante');
+        const fecharPainel = document.getElementById('fecharPainel');
+        let painelAberto = false;
 
-        function atualizarEstadoTelaFlutuante(aberto) {
-            telaFlutuanteAberta = aberto;
-            janelaFlutuante.style.display = aberto ? 'flex' : 'none';
-            textoMenuTela.textContent = aberto ? 'Fechar Tela' : 'Tela Flutuante';
+        function alternarPainel() {
+            painelAberto = !painelAberto;
+            painelFlutuante.style.display = painelAberto ? 'flex' : 'none';
+            textoMenuTela.textContent = painelAberto ? 'Fechar Painel' : 'Tela Flutuante';
         }
 
         menuTelaFlutuante.addEventListener('click', () => {
             fecharMenu();
-            atualizarEstadoTelaFlutuante(!telaFlutuanteAberta);
+            alternarPainel();
         });
 
-        btnFecharJanela.addEventListener('click', () => {
-            atualizarEstadoTelaFlutuante(false);
-        });
+        fecharPainel.addEventListener('click', alternarPainel);
 
         // === AJUDA ===
         document.getElementById('menuAjuda').addEventListener('click', () => {
@@ -910,7 +899,6 @@
 
         document.getElementById('acaoLigar').addEventListener('click', () => {
             menuAcoes.classList.remove('ativo');
-            // ✅ MOSTRA A NOTIFICAÇÃO DE CHAMADA
             mostrarChamadaEntrante(contatoAtual || 'Amigo');
         });
         document.getElementById('acaoWebcam').addEventListener('click', () => {
