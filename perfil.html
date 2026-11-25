@@ -20,28 +20,50 @@ h1 { font-size:1.6rem; margin-bottom:.3rem; }
 .aviso a { color:var(--destaque); }
 .cabecalho {
     display:flex; align-items:center; gap:1.2rem; padding:1.5rem;
+    /* Foto de capa + gradiente para manter o texto legível */
     background:
-        linear-gradient(135deg, rgba(96, 165, 250, 0.15), rgba(59, 130, 246, 0.08)),
-        linear-gradient(180deg, var(--card), rgba(30, 41, 59, 0.95));
+        linear-gradient(to right, rgba(15, 23, 42, 0.85), rgba(15, 23, 42, 0.5)),
+        var(--capa-imagem, url('capa.jpg'));
+    background-size: cover;
+    background-position: center;
     border:1px solid var(--borda); border-radius:14px; margin-bottom:1.5rem;
     position: relative;
     overflow: hidden;
 }
-/* Efeito de brilho na capa */
-.cabecalho::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 70px;
-    background: linear-gradient(90deg, rgba(96, 165, 250, 0.2), transparent 60%);
-    pointer-events: none;
+/* Ajuste para tema claro — deixa a capa mais suave */
+:root[data-tema="claro"] .cabecalho {
+    background:
+        linear-gradient(to right, rgba(241, 245, 249, 0.75), rgba(241, 245, 249, 0.5)),
+        var(--capa-imagem, url('capa.jpg'));
+    background-size: cover;
+    background-position: center;
 }
 /* Garante que o conteúdo fique acima da capa */
 .cabecalho > * {
     position: relative;
-    z-index: 1;
+    z-index: 2;
+}
+/* Botão de editar capa */
+.btn-capa {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.55);
+    color: #fff;
+    display: grid;
+    place-items: center;
+    font-size: 1rem;
+    cursor: pointer;
+    z-index: 3;
+}
+.btn-capa:hover {
+    background: rgba(0, 0, 0, 0.75);
+}
+input#inputCapa {
+    display: none;
 }
 .foto { position:relative; width:80px; height:80px; border-radius:50%; background:linear-gradient(135deg,var(--destaque),#3B82F6); display:grid; place-items:center; font-size:1.8rem; font-weight:700; color:#fff; flex-shrink:0; }
 .foto img { position:absolute; inset:0; width:100%; height:100%; border-radius:50%; object-fit:cover; }
@@ -97,6 +119,9 @@ h1 { font-size:1.6rem; margin-bottom:.3rem; }
 <div class="aviso" id="aviso" hidden>Você não está conectado. Alterações ficam só neste aparelho. <a href="index.html">Entrar</a></div>
 
 <div class="cabecalho">
+    <button class="btn-capa" id="btnCapa" aria-label="Trocar capa">🖼️</button>
+    <input type="file" id="inputCapa" accept="image/*" hidden>
+
     <div class="foto">
         <span id="ini">U</span><img id="fotoImg" alt="Foto de perfil" hidden>
         <button class="cam" id="btnFoto" aria-label="Trocar foto">📷</button>
@@ -352,7 +377,13 @@ function render() {
     document.documentElement.dataset.tema = tema();
     document.documentElement.style.setProperty('--destaque', CORES[cor()][1]);
 
-    const n = nome(), foto = ls.g('fotoPerfil'), st = STATUS[status()];
+    const n = nome(), foto = ls.g('fotoPerfil'), capa = ls.g('capaPerfil'), st = STATUS[status()];
+    /* Aplica capa salva pelo usuário */
+    if (capa) {
+        document.documentElement.style.setProperty('--capa-imagem', `url(${capa})`);
+    } else {
+        document.documentElement.style.setProperty('--capa-imagem', 'url(capa.jpg)');
+    }
     $('ini').textContent = n.charAt(0).toUpperCase();
     $('fotoImg').hidden = !foto; if (foto) $('fotoImg').src = foto;
     $('hNome').textContent = n;
@@ -401,6 +432,42 @@ document.addEventListener('keydown', (e) => {
         g.gain.setValueAtTime(0.04, t); g.gain.exponentialRampToValueAtTime(0.001, t + 0.025);
         o.connect(g); g.connect(audioCtx.destination); o.start(t); o.stop(t + 0.025);
     } catch (err) {}
+});
+
+/* ---------- Foto de capa ---------- */
+$('btnCapa').addEventListener('click', () => $('inputCapa').click());
+
+$('inputCapa').addEventListener('change', (e) => {
+    const f = e.target.files[0];
+    e.target.value = '';
+    if (!f) return;
+
+    const url = URL.createObjectURL(f);
+    const img = new Image();
+
+    img.onload = () => {
+        const t = 1200; // largura máxima da capa
+        const c = document.createElement('canvas');
+        c.width = t;
+        c.height = Math.round(t * 0.25); // proporção de capa
+
+        const m = Math.min(img.width, img.height * 4);
+        c.getContext('2d').drawImage(img, (img.width - m) / 2, 0, m, m / 4, 0, 0, t, c.height);
+
+        URL.revokeObjectURL(url);
+
+        const capaBase64 = c.toDataURL('image/jpeg', 0.85);
+
+        if (ls.s('capaPerfil', capaBase64)) {
+            toast('Capa atualizada');
+            render();
+        } else {
+            toast('Sem espaço para salvar a capa');
+        }
+    };
+
+    img.onerror = () => toast('Arquivo de imagem inválido');
+    img.src = url;
 });
 
 /* ---------- Início ---------- */
