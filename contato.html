@@ -65,6 +65,15 @@
             justify-content: space-between;
             align-items: center;
             margin-bottom: 16px;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .acoes-direita {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
         }
 
         .btn-adicionar {
@@ -83,6 +92,20 @@
         }
 
         .btn-adicionar:hover:not(:disabled) {
+            transform: translateY(-1px);
+        }
+
+        .btn-convite {
+            padding: 10px 16px;
+            background: linear-gradient(135deg, #8B5CF6, #7C3AED);
+            color: white;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.2s ease;
+        }
+
+        .btn-convite:hover {
             transform: translateY(-1px);
         }
 
@@ -278,7 +301,7 @@
             opacity: 0.7;
         }
 
-        .modal input {
+        .modal input[type="text"] {
             width: 100%;
             padding: 10px 12px;
             border-radius: 6px;
@@ -343,6 +366,10 @@
             padding: 10px;
             margin-bottom: 14px;
             display: none;
+            flex-direction: column;
+            gap: 8px;
+            max-height: 240px;
+            overflow-y: auto;
         }
 
         .procurando {
@@ -358,6 +385,52 @@
             margin-bottom: 12px;
             display: none;
         }
+
+        .item-encontrado {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 8px;
+            border: 1px solid rgba(34, 197, 94, 0.15);
+            cursor: pointer;
+        }
+
+        .foto-busca {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 15px;
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+
+        .info-busca {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .email-busca {
+            font-size: 0.78rem;
+            opacity: 0.5;
+            display: block;
+            margin-top: 2px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .selecionar-busca input[type="radio"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            accent-color: #22c55e;
+        }
     </style>
 </head>
 <body>
@@ -371,7 +444,10 @@
 
         <div class="topo-acoes">
             <div></div>
-            <button class="btn-adicionar" id="btnAbrirModal">➕ Adicionar Contato</button>
+            <div class="acoes-direita">
+                <button class="btn-adicionar" id="btnAbrirModal">➕ Adicionar Contato</button>
+                <button class="btn-convite" onclick="gerarLinkConvite()">📤 Copiar Link de Convite</button>
+            </div>
         </div>
 
         <div class="busca">
@@ -397,9 +473,7 @@
             <input type="text" id="buscarUsuario" placeholder="Digite o nome ou e-mail...">
             <div class="procurando" id="procurando">🔍 Pesquisando...</div>
             <div class="erro-busca" id="erroBusca"></div>
-            <div class="resultado-busca" id="resultadoBusca">
-                <strong id="nomeEncontrado"></strong>
-            </div>
+            <div class="resultado-busca" id="resultadoBusca"></div>
             <div class="modal-botoes">
                 <button class="btn-cancelar" id="btnCancelarAdicionar">Cancelar</button>
                 <button class="btn-confirmar" id="btnEnviarSolicitacao" disabled>Enviar Convite</button>
@@ -440,7 +514,6 @@
         const procurando = document.getElementById('procurando');
         const erroBusca = document.getElementById('erroBusca');
         const resultadoBusca = document.getElementById('resultadoBusca');
-        const nomeEncontrado = document.getElementById('nomeEncontrado');
         const btnEnviarSolicitacao = document.getElementById('btnEnviarSolicitacao');
         const badgePendentes = document.getElementById('badgePendentes');
         const avisoErro = document.getElementById('avisoErro');
@@ -539,7 +612,10 @@
                 return [];
             }
 
-            return perfis || [];
+            return (perfis || []).map(perfil => ({
+                ...perfil,
+                email: ''
+            }));
         }
 
         async function enviarSolicitacao(recipientId) {
@@ -802,6 +878,7 @@
         document.getElementById('btnAbrirModal').addEventListener('click', () => {
             modalAdicionar.classList.add('ativo');
             buscarUsuario.value = '';
+            resultadoBusca.innerHTML = '';
             resultadoBusca.style.display = 'none';
             erroBusca.style.display = 'none';
             usuarioEncontrado = null;
@@ -817,6 +894,7 @@
         let timerBuscaUsuario;
         buscarUsuario.addEventListener('input', () => {
             clearTimeout(timerBuscaUsuario);
+            resultadoBusca.innerHTML = '';
             resultadoBusca.style.display = 'none';
             erroBusca.style.display = 'none';
             btnEnviarSolicitacao.disabled = true;
@@ -836,10 +914,36 @@
                     return;
                 }
 
+                resultadoBusca.innerHTML = '';
+                resultadoBusca.style.display = 'flex';
+
+                resultados.forEach((usuario, indice) => {
+                    const iniciais = gerarIniciais(usuario.name);
+                    const item = document.createElement('label');
+                    item.className = 'item-encontrado';
+                    item.innerHTML = `
+                        <div class="foto-busca">${iniciais}</div>
+                        <div class="info-busca">
+                            <strong>${usuario.name}</strong>
+                            <span class="email-busca">${usuario.email || ''}</span>
+                        </div>
+                        <div class="selecionar-busca">
+                            <input type="radio" name="selecionarUsuario" data-indice="${indice}" ${indice === 0 ? 'checked' : ''}>
+                        </div>
+                    `;
+                    resultadoBusca.appendChild(item);
+                });
+
+                window.usuariosEncontradosLista = resultados;
                 usuarioEncontrado = resultados[0];
-                nomeEncontrado.textContent = `👤 ${usuarioEncontrado.name}`;
-                resultadoBusca.style.display = 'block';
                 btnEnviarSolicitacao.disabled = false;
+
+                document.querySelectorAll('input[name="selecionarUsuario"]').forEach(radio => {
+                    radio.addEventListener('change', (e) => {
+                        const indice = parseInt(e.target.dataset.indice, 10);
+                        usuarioEncontrado = window.usuariosEncontradosLista[indice];
+                    });
+                });
             }, 500);
         });
 
@@ -871,6 +975,28 @@
             if (!idParaExcluir) return;
             await excluirAmizade(idParaExcluir);
         });
+
+        function gerarLinkConvite() {
+            if (!usuarioAtual) {
+                alert('Você precisa estar logado!');
+                return;
+            }
+
+            const baseUrl = window.location.origin + window.location.pathname.replace('contato.html', 'perfil.html');
+            const linkComConvite = `${baseUrl}?de=${encodeURIComponent(usuarioAtual.email || usuarioAtual.id)}`;
+
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(linkComConvite)
+                    .then(() => {
+                        alert('✅ Link copiado! Envie para quem quiser pelo WhatsApp, mensagem, etc.');
+                    })
+                    .catch(() => {
+                        prompt('Copie esse link manualmente:', linkComConvite);
+                    });
+            } else {
+                prompt('Copie esse link manualmente:', linkComConvite);
+            }
+        }
 
         async function inicializar() {
             await verificarUsuario();
