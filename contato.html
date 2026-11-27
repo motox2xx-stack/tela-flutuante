@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>👥 Contatos — Guardian Shield</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -33,6 +34,32 @@
             gap: 10px;
         }
 
+        .carregando {
+            text-align: center;
+            padding: 40px;
+            opacity: 0.6;
+        }
+
+        .erro {
+            background: rgba(239, 68, 68, 0.15);
+            border: 1px solid #ef4444;
+            color: #fca5a5;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            display: none;
+        }
+
+        .sucesso {
+            background: rgba(34, 197, 94, 0.15);
+            border: 1px solid #22c55e;
+            color: #86efac;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            display: none;
+        }
+
         .topo-acoes {
             display: flex;
             justify-content: space-between;
@@ -50,7 +77,12 @@
             transition: all 0.2s ease;
         }
 
-        .btn-adicionar:hover {
+        .btn-adicionar:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-adicionar:hover:not(:disabled) {
             transform: translateY(-1px);
         }
 
@@ -82,6 +114,7 @@
             margin-bottom: 16px;
             border-bottom: 1px solid rgba(255, 255, 255, 0.06);
             padding-bottom: 4px;
+            flex-wrap: wrap;
         }
 
         .aba {
@@ -100,6 +133,15 @@
 
         .aba:hover {
             color: #cbd5e1;
+        }
+
+        .badge-qtd {
+            background: #ef4444;
+            color: white;
+            font-size: 0.65rem;
+            padding: 1px 6px;
+            border-radius: 10px;
+            margin-left: 4px;
         }
 
         .lista-contatos {
@@ -123,7 +165,6 @@
         .card-contato:hover {
             background: rgba(59, 130, 246, 0.08);
             border-color: rgba(59, 130, 246, 0.15);
-            transform: translateY(-1px);
         }
 
         .contato-foto {
@@ -151,8 +192,10 @@
         }
 
         .status-online { background: #22C55E; }
-        .status-ocupado { background: #F59E0B; }
-        .status-ausente { background: #64748B; }
+        .status-busy { background: #F59E0B; }
+        .status-away { background: #64748B; }
+        .status-offline { background: #475569; }
+        .status-pending { background: #eab308; }
 
         .contato-info {
             flex: 1;
@@ -170,39 +213,24 @@
             opacity: 0.6;
         }
 
-        .btn-favorito {
-            font-size: 18px;
-            background: none;
-            border: none;
-            cursor: pointer;
-            padding: 6px;
-            color: #475569;
-            transition: all 0.2s ease;
-            flex-shrink: 0;
-        }
-
-        .btn-favorito.favoritado {
-            color: #FBBF24;
-        }
-
-        .btn-favorito:hover {
-            transform: scale(1.15);
-        }
-
-        .btn-excluir {
+        .btn-aceitar-card,
+        .btn-recusar-card,
+        .btn-excluir-card {
             font-size: 16px;
             background: none;
             border: none;
             cursor: pointer;
             padding: 6px;
-            color: #475569;
             transition: all 0.2s ease;
             flex-shrink: 0;
         }
 
-        .btn-excluir:hover {
-            color: #EF4444;
-        }
+        .btn-aceitar-card { color: #475569; }
+        .btn-aceitar-card:hover { color: #22C55E; }
+        .btn-recusar-card,
+        .btn-excluir-card { color: #475569; }
+        .btn-recusar-card:hover,
+        .btn-excluir-card:hover { color: #EF4444; }
 
         .vazio {
             text-align: center;
@@ -218,7 +246,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.6);
+            background: rgba(0, 0, 0, 0.7);
             display: none;
             align-items: center;
             justify-content: center;
@@ -250,8 +278,7 @@
             opacity: 0.7;
         }
 
-        .modal input,
-        .modal select {
+        .modal input {
             width: 100%;
             padding: 10px 12px;
             border-radius: 6px;
@@ -261,11 +288,6 @@
             font-size: 0.9rem;
             margin-bottom: 14px;
             outline: none;
-        }
-
-        .modal select option {
-            background: #1E293B;
-            color: white;
         }
 
         .modal-botoes {
@@ -291,6 +313,11 @@
             cursor: pointer;
         }
 
+        .btn-confirmar:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
         .btn-confirmar.excluir {
             background: #EF4444;
         }
@@ -308,6 +335,29 @@
         .voltar:hover {
             text-decoration: underline;
         }
+
+        .resultado-busca {
+            background: rgba(34, 197, 94, 0.08);
+            border: 1px solid rgba(34, 197, 94, 0.2);
+            border-radius: 6px;
+            padding: 10px;
+            margin-bottom: 14px;
+            display: none;
+        }
+
+        .procurando {
+            font-size: 0.85rem;
+            color: #94a3b8;
+            margin-bottom: 12px;
+            display: none;
+        }
+
+        .erro-busca {
+            font-size: 0.85rem;
+            color: #f87171;
+            margin-bottom: 12px;
+            display: none;
+        }
     </style>
 </head>
 <body>
@@ -315,6 +365,9 @@
     <div class="container">
         <a href="principal.html" class="voltar">← Voltar para Conversas</a>
         <h1>👥 Meus Contatos</h1>
+
+        <div id="avisoErro" class="erro"></div>
+        <div id="avisoSucesso" class="sucesso"></div>
 
         <div class="topo-acoes">
             <div></div>
@@ -326,229 +379,508 @@
         </div>
 
         <div class="abas">
-            <div class="aba ativa" data-filtro="todos">Todos</div>
+            <div class="aba ativa" data-filtro="amigos">👥 Amigos</div>
             <div class="aba" data-filtro="online">🟢 Online</div>
-            <div class="aba" data-filtro="favoritos">⭐ Favoritos</div>
+            <div class="aba" data-filtro="pendentes">⏳ Pendentes <span class="badge-qtd" id="badgePendentes">0</span></div>
         </div>
 
         <div class="lista-contatos" id="listaContatos">
-            <!-- Os contatos aparecem aqui -->
+            <div class="carregando">⏳ Carregando...</div>
         </div>
     </div>
 
-    <!-- MODAL ADICIONAR -->
+    <!-- MODAL ADICIONAR / BUSCAR USUÁRIO -->
     <div class="modal-fundo" id="modalAdicionar">
         <div class="modal">
-            <h3>➕ Adicionar Contato</h3>
-            <label>Nome</label>
-            <input type="text" id="novoNome" placeholder="Digite o nome...">
-            <label>Status</label>
-            <select id="novoStatus">
-                <option value="online">🟢 Disponível</option>
-                <option value="ocupado">🟡 Ocupado</option>
-                <option value="ausente">⚪ Ausente</option>
-            </select>
+            <h3>➕ Enviar Solicitação de Amizade</h3>
+            <label>Nome ou E-mail da pessoa</label>
+            <input type="text" id="buscarUsuario" placeholder="Digite o nome ou e-mail...">
+            <div class="procurando" id="procurando">🔍 Pesquisando...</div>
+            <div class="erro-busca" id="erroBusca"></div>
+            <div class="resultado-busca" id="resultadoBusca">
+                <strong id="nomeEncontrado"></strong>
+            </div>
             <div class="modal-botoes">
                 <button class="btn-cancelar" id="btnCancelarAdicionar">Cancelar</button>
-                <button class="btn-confirmar" id="btnSalvarContato">Salvar</button>
+                <button class="btn-confirmar" id="btnEnviarSolicitacao" disabled>Enviar Convite</button>
             </div>
         </div>
     </div>
 
-    <!-- MODAL CONFIRMAR EXCLUSÃO -->
+    <!-- MODAL EXCLUIR -->
     <div class="modal-fundo" id="modalExcluir">
         <div class="modal">
-            <h3>🗑️ Excluir Contato</h3>
+            <h3>🗑️ Remover Contato</h3>
             <p style="font-size:0.9rem; opacity:0.8; margin-bottom:20px;">
-                Tem certeza que deseja excluir <strong id="nomeExcluir"></strong>? Esta ação não pode ser desfeita.
+                Tem certeza que deseja remover <strong id="nomeExcluir"></strong>? Esta ação não pode ser desfeita.
             </p>
             <div class="modal-botoes">
                 <button class="btn-cancelar" id="btnCancelarExcluir">Cancelar</button>
-                <button class="btn-confirmar excluir" id="btnConfirmarExcluir">Sim, Excluir</button>
+                <button class="btn-confirmar excluir" id="btnConfirmarExcluir">Sim, Remover</button>
             </div>
         </div>
     </div>
 
     <script>
-        function gerarIniciais(nomeCompleto) {
-            const partes = nomeCompleto.trim().split(/\s+/).filter(p => p.length > 0);
-            if (partes.length === 0) return '?';
-            if (partes.length === 1) return partes[0].charAt(0).toUpperCase();
-            return (partes[0].charAt(0) + partes[partes.length - 1].charAt(0)).toUpperCase();
-        }
+        const SUPABASE_URL = 'https://anvdihxzwvbpomejydid.supabase.co';
+        const SUPABASE_KEY = 'sb_publishable_3OliyDBDFdpD_skoxIx-EQ_2eRE1tme';
+        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        let contatos = JSON.parse(localStorage.getItem('guardianContatos')) || [
-            { id: 1, nome: 'João', status: 'online', favorito: false, iniciais: 'J' },
-            { id: 2, nome: 'Maria', status: 'ocupado', favorito: true, iniciais: 'M' },
-            { id: 3, nome: 'Equipe', status: 'online', favorito: true, iniciais: 'E' }
-        ];
-        let filtroAtual = 'todos';
+        let usuarioAtual = null;
+        let filtroAtual = 'amigos';
         let idParaExcluir = null;
+        let usuarioEncontrado = null;
 
         const listaEl = document.getElementById('listaContatos');
         const buscaEl = document.getElementById('buscaContato');
         const abasEl = document.querySelectorAll('.aba');
         const modalAdicionar = document.getElementById('modalAdicionar');
         const modalExcluir = document.getElementById('modalExcluir');
-        const inputNovoNome = document.getElementById('novoNome');
-        const selectNovoStatus = document.getElementById('novoStatus');
+        const buscarUsuario = document.getElementById('buscarUsuario');
+        const procurando = document.getElementById('procurando');
+        const erroBusca = document.getElementById('erroBusca');
+        const resultadoBusca = document.getElementById('resultadoBusca');
+        const nomeEncontrado = document.getElementById('nomeEncontrado');
+        const btnEnviarSolicitacao = document.getElementById('btnEnviarSolicitacao');
+        const badgePendentes = document.getElementById('badgePendentes');
+        const avisoErro = document.getElementById('avisoErro');
+        const avisoSucesso = document.getElementById('avisoSucesso');
 
-        function salvarContatos() {
-            localStorage.setItem('guardianContatos', JSON.stringify(contatos));
-            renderizarLista();
+        function mostrarErro(texto) {
+            avisoErro.textContent = texto;
+            avisoErro.style.display = 'block';
+            setTimeout(() => avisoErro.style.display = 'none', 4000);
+        }
+
+        function mostrarSucesso(texto) {
+            avisoSucesso.textContent = texto;
+            avisoSucesso.style.display = 'block';
+            setTimeout(() => avisoSucesso.style.display = 'none', 3000);
+        }
+
+        function gerarIniciais(nomeCompleto) {
+            if (!nomeCompleto) return '?';
+            const partes = nomeCompleto.trim().split(/\s+/).filter(p => p.length > 0);
+            if (partes.length === 0) return '?';
+            if (partes.length === 1) return partes[0].charAt(0).toUpperCase();
+            return (partes[0].charAt(0) + partes[partes.length - 1].charAt(0)).toUpperCase();
         }
 
         function getStatusTexto(status) {
-            return status === 'online' ? '● Disponível' : status === 'ocupado' ? '● Ocupado' : '● Ausente';
+            switch (status) {
+                case 'online': return '● Disponível';
+                case 'busy': return '● Ocupado';
+                case 'away': return '● Ausente';
+                case 'offline': return '● Desconectado';
+                case 'pending': return '⏳ Aguardando confirmação';
+                case 'received': return '📩 Solicitação recebida';
+                default: return '● Disponível';
+            }
         }
 
-        function renderizarLista() {
-            let filtrados = [...contatos].sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'));
-            const termo = buscaEl.value.toLowerCase().trim();
+        function getStatusClasse(status) {
+            switch (status) {
+                case 'online': return 'status-online';
+                case 'busy': return 'status-busy';
+                case 'away': return 'status-away';
+                case 'offline': return 'status-offline';
+                case 'pending': return 'status-pending';
+                case 'received': return 'status-pending';
+                default: return 'status-offline';
+            }
+        }
 
-            if (filtroAtual === 'online') filtrados = filtrados.filter(c => c.status === 'online');
-            if (filtroAtual === 'favoritos') filtrados = filtrados.filter(c => c.favorito);
-            if (termo) filtrados = filtrados.filter(c => c.nome.toLowerCase().includes(termo));
+        async function verificarUsuario() {
+            const { data: { user } } = await supabaseClient.auth.getUser();
+            if (!user) {
+                listaEl.innerHTML = `<div class="vazio">🔒 Você precisa estar logado para ver seus contatos.</div>`;
+                return null;
+            }
+            usuarioAtual = user;
+            return user;
+        }
 
-            if (filtrados.length === 0) {
-                listaEl.innerHTML = `<div class="vazio">${termo ? '🔍 Nenhum contato encontrado' : filtroAtual === 'favoritos' ? '⭐ Nenhum favorito ainda' : filtroAtual === 'online' ? '🟢 Ninguém online' : '📭 Nenhum contato ainda'}</div>`;
+        async function carregarPerfil() {
+            if (!usuarioAtual) return;
+
+            const { data: perfil, error } = await supabaseClient
+                .from('profiles')
+                .select('*')
+                .eq('id', usuarioAtual.id)
+                .single();
+
+            if (error && error.code !== 'PGRST116') {
+                console.error('Erro ao carregar perfil:', error);
+            }
+
+            if (!perfil) {
+                const email = usuarioAtual.email || '';
+                const nomePadrao = email.split('@')[0] || 'Usuário';
+                await supabaseClient.from('profiles').insert({
+                    id: usuarioAtual.id,
+                    name: nomePadrao,
+                    status: 'online'
+                });
+            }
+        }
+
+        async function buscarUsuarioPorNome(texto) {
+            if (!usuarioAtual) return [];
+
+            const { data: perfis, error } = await supabaseClient
+                .from('profiles')
+                .select('id, name, status, avatar_url')
+                .ilike('name', `%${texto}%`)
+                .neq('id', usuarioAtual.id)
+                .limit(5);
+
+            if (error) {
+                console.error('Erro na busca:', error);
+                return [];
+            }
+
+            return perfis || [];
+        }
+
+        async function enviarSolicitacao(recipientId) {
+            if (!usuarioAtual) return { success: false, error: 'Usuário não logado' };
+
+            const { data: existente } = await supabaseClient
+                .from('friend_requests')
+                .select('*')
+                .or(`and(sender_id.eq.${usuarioAtual.id},recipient_id.eq.${recipientId}),and(sender_id.eq.${recipientId},recipient_id.eq.${usuarioAtual.id})`)
+                .in('status', ['pending', 'accepted'])
+                .maybeSingle();
+
+            if (existente) {
+                if (existente.status === 'accepted') {
+                    return { success: false, error: 'Vocês já são amigos!' };
+                }
+                return { success: false, error: 'Solicitação já enviada ou pendente!' };
+            }
+
+            const { error } = await supabaseClient
+                .from('friend_requests')
+                .insert({
+                    sender_id: usuarioAtual.id,
+                    recipient_id: recipientId,
+                    status: 'pending'
+                });
+
+            if (error) {
+                console.error('Erro ao enviar solicitação:', error);
+                return { success: false, error: 'Erro ao enviar convite' };
+            }
+
+            return { success: true };
+        }
+
+        async function aceitarSolicitacao(requestId) {
+            const { error } = await supabaseClient
+                .from('friend_requests')
+                .update({ status: 'accepted' })
+                .eq('id', requestId);
+
+            if (error) {
+                mostrarErro('Erro ao aceitar solicitação');
                 return;
             }
 
-            listaEl.innerHTML = filtrados.map(contato => `
-                <div class="card-contato" data-id="${contato.id}">
-                    <div class="contato-foto">
-                        ${contato.iniciais || gerarIniciais(contato.nome)}
-                        <div class="indicador-status status-${contato.status}"></div>
-                    </div>
-                    <div class="contato-info">
-                        <div class="contato-nome">${contato.nome}</div>
-                        <div class="contato-status-texto">${getStatusTexto(contato.status)}</div>
-                    </div>
-                    <button class="btn-favorito ${contato.favorito ? 'favoritado' : ''}" data-acao="favoritar" data-id="${contato.id}">★</button>
-                    <button class="btn-excluir" data-acao="excluir" data-id="${contato.id}" data-nome="${contato.nome}">🗑️</button>
-                </div>
-            `).join('');
-
-            vincularEventosCards();
+            mostrarSucesso('✅ Solicitação aceita!');
+            carregarListaContatos();
         }
 
-        function vincularEventosCards() {
-            document.querySelectorAll('.card-contato').forEach(card => {
-                const id = parseInt(card.dataset.id, 10);
+        async function recusarSolicitacao(requestId) {
+            const { error } = await supabaseClient
+                .from('friend_requests')
+                .update({ status: 'rejected' })
+                .eq('id', requestId);
 
-                card.addEventListener('click', (e) => {
-                    if (e.target.closest('.btn-favorito') || e.target.closest('.btn-excluir')) return;
-                    const alvo = contatos.find(c => c.id === id);
-                    if (alvo) {
-                        window.location.href = `principal.html?contato=${encodeURIComponent(alvo.nome)}`;
-                    }
+            if (error) {
+                mostrarErro('Erro ao recusar solicitação');
+                return;
+            }
+
+            mostrarSucesso('Solicitação recusada');
+            carregarListaContatos();
+        }
+
+        async function excluirAmizade(requestId) {
+            const { error } = await supabaseClient
+                .from('friend_requests')
+                .delete()
+                .eq('id', requestId);
+
+            if (error) {
+                mostrarErro('Erro ao remover contato');
+                return;
+            }
+
+            mostrarSucesso('Contato removido');
+            modalExcluir.classList.remove('ativo');
+            idParaExcluir = null;
+            carregarListaContatos();
+        }
+
+        async function carregarListaContatos() {
+            if (!usuarioAtual) {
+                listaEl.innerHTML = `<div class="vazio">⏳ Carregando...</div>`;
+                return;
+            }
+
+            listaEl.innerHTML = `<div class="carregando">⏳ Carregando contatos...</div>`;
+
+            let query;
+
+            if (filtroAtual === 'amigos' || filtroAtual === 'online') {
+                query = supabaseClient
+                    .from('friend_requests')
+                    .select('*, remetente:profiles!friend_requests_sender_id_fkey(id, name, status, avatar_url), destinatario:profiles!friend_requests_recipient_id_fkey(id, name, status, avatar_url)')
+                    .or(`sender_id.eq.${usuarioAtual.id},recipient_id.eq.${usuarioAtual.id}`)
+                    .eq('status', 'accepted');
+            } else if (filtroAtual === 'pendentes') {
+                query = supabaseClient
+                    .from('friend_requests')
+                    .select('*, remetente:profiles!friend_requests_sender_id_fkey(id, name, status, avatar_url)')
+                    .eq('recipient_id', usuarioAtual.id)
+                    .eq('status', 'pending');
+            }
+
+            const { data: solicitacoes, error } = await query;
+
+            if (error) {
+                listaEl.innerHTML = `<div class="vazio">❌ Erro ao carregar</div>`;
+                console.error(error);
+                return;
+            }
+
+            const { count: qtdPendentes } = await supabaseClient
+                .from('friend_requests')
+                .select('*', { count: 'exact', head: true })
+                .eq('recipient_id', usuarioAtual.id)
+                .eq('status', 'pending');
+
+            badgePendentes.textContent = qtdPendentes || 0;
+
+            const termoBusca = buscaEl.value.toLowerCase().trim();
+            let itensParaExibir = [];
+
+            if (filtroAtual === 'pendentes') {
+                itensParaExibir = (solicitacoes || []).map(req => ({
+                    ...req,
+                    perfil: req.remetente
+                }));
+            } else {
+                itensParaExibir = (solicitacoes || [])
+                    .map(req => {
+                        const ehRemetente = req.sender_id === usuarioAtual.id;
+                        const perfil = ehRemetente ? req.destinatario : req.remetente;
+                        return { ...req, perfil };
+                    })
+                    .filter(item => item.perfil);
+
+                if (filtroAtual === 'online') {
+                    itensParaExibir = itensParaExibir.filter(item => item.perfil.status === 'online');
+                }
+
+                if (termoBusca) {
+                    itensParaExibir = itensParaExibir.filter(item =>
+                        item.perfil.name.toLowerCase().includes(termoBusca)
+                    );
+                }
+
+                itensParaExibir.sort((a, b) => a.perfil.name.localeCompare(b.perfil.name, 'pt-BR'));
+            }
+
+            renderizarLista(itensParaExibir);
+        }
+
+        function renderizarLista(itens) {
+            if (!itens || itens.length === 0) {
+                if (filtroAtual === 'pendentes') {
+                    listaEl.innerHTML = `<div class="vazio">🎉 Nenhuma solicitação pendente</div>`;
+                } else if (filtroAtual === 'online') {
+                    listaEl.innerHTML = `<div class="vazio">🟡 Ninguém está online no momento</div>`;
+                } else {
+                    listaEl.innerHTML = `<div class="vazio">📭 Nenhum contato ainda. Adicione seu primeiro amigo!</div>`;
+                }
+                return;
+            }
+
+            if (filtroAtual === 'pendentes') {
+                listaEl.innerHTML = itens.map(req => {
+                    const nomePerfil = req.perfil?.name || 'Usuário';
+                    return `
+                        <div class="card-contato" data-id="${req.id}">
+                            <div class="contato-foto">
+                                ${gerarIniciais(nomePerfil)}
+                                <div class="indicador-status status-pending"></div>
+                            </div>
+                            <div class="contato-info">
+                                <div class="contato-nome">${nomePerfil}</div>
+                                <div class="contato-status-texto">📩 Enviou uma solicitação</div>
+                            </div>
+                            <button class="btn-aceitar-card" data-acao="aceitar" data-id="${req.id}" title="Aceitar">✅</button>
+                            <button class="btn-recusar-card" data-acao="recusar" data-id="${req.id}" title="Recusar">❌</button>
+                        </div>
+                    `;
+                }).join('');
+            } else {
+                listaEl.innerHTML = itens.map(item => `
+                    <div class="card-contato" data-id="${item.id}" data-outro-id="${item.perfil.id}">
+                        <div class="contato-foto">
+                            ${gerarIniciais(item.perfil.name)}
+                            <div class="indicador-status ${getStatusClasse(item.perfil.status)}"></div>
+                        </div>
+                        <div class="contato-info">
+                            <div class="contato-nome">${item.perfil.name}</div>
+                            <div class="contato-status-texto">${getStatusTexto(item.perfil.status)}</div>
+                        </div>
+                        <button class="btn-excluir-card" data-acao="excluir" data-id="${item.id}" data-nome="${item.perfil.name}" title="Remover contato">🗑️</button>
+                    </div>
+                `).join('');
+            }
+
+            vincularEventosLista();
+        }
+
+        function vincularEventosLista() {
+            document.querySelectorAll('.btn-aceitar-card').forEach(btn => {
+                btn.addEventListener('click', async (e) => {
+                    e.stopPropagation();
+                    await aceitarSolicitacao(btn.dataset.id);
                 });
             });
 
-            document.querySelectorAll('.btn-favorito').forEach(btn => {
-                btn.addEventListener('click', (e) => {
+            document.querySelectorAll('.btn-recusar-card').forEach(btn => {
+                btn.addEventListener('click', async (e) => {
                     e.stopPropagation();
-                    const id = parseInt(btn.dataset.id, 10);
-                    const contato = contatos.find(c => c.id === id);
-                    if (contato) {
-                        contato.favorito = !contato.favorito;
-                        salvarContatos();
-                    }
+                    await recusarSolicitacao(btn.dataset.id);
                 });
             });
 
-            document.querySelectorAll('.btn-excluir').forEach(btn => {
+            document.querySelectorAll('.btn-excluir-card').forEach(btn => {
                 btn.addEventListener('click', (e) => {
                     e.stopPropagation();
-                    idParaExcluir = parseInt(btn.dataset.id, 10);
+                    idParaExcluir = btn.dataset.id;
                     document.getElementById('nomeExcluir').textContent = btn.dataset.nome;
                     modalExcluir.classList.add('ativo');
                 });
             });
+
+            document.querySelectorAll('.card-contato').forEach(card => {
+                card.addEventListener('click', () => {
+                    const outroId = card.dataset.outroId;
+                    const nome = card.querySelector('.contato-nome')?.textContent;
+                    if (outroId && window.abrirConversaComContato) {
+                        window.abrirConversaComContato(nome, outroId);
+                    }
+                });
+            });
         }
 
-        // Adicionar
-        document.getElementById('btnAbrirModal').addEventListener('click', () => {
-            modalAdicionar.classList.add('ativo');
-            inputNovoNome.value = '';
-            selectNovoStatus.value = 'online';
-            inputNovoNome.focus();
-        });
-
-        document.getElementById('btnCancelarAdicionar').addEventListener('click', () => {
-            modalAdicionar.classList.remove('ativo');
-        });
-
-        document.getElementById('btnSalvarContato').addEventListener('click', () => {
-            const nomeLimpo = inputNovoNome.value.replace(/\s+/g, ' ').trim();
-            const status = selectNovoStatus.value;
-
-            if (nomeLimpo.length < 2) {
-                alert('⚠️ Digite um nome com pelo menos 2 caracteres!');
-                return;
-            }
-
-            if (!nomeLimpo.replace(/\s/g, '').length) {
-                alert('⚠️ Digite um nome válido!');
-                return;
-            }
-
-            const apenasLetras = /^[A-Za-zÀ-ÿ\s'-]+$/.test(nomeLimpo);
-            if (!apenasLetras) {
-                alert('⚠️ Use apenas letras no nome!');
-                return;
-            }
-
-            const nomeExiste = contatos.some(c => c.nome.toLowerCase() === nomeLimpo.toLowerCase());
-            if (nomeExiste) {
-                alert('⚠️ Este contato já está na sua lista!');
-                inputNovoNome.value = '';
-                return;
-            }
-
-            const novoId = contatos.length > 0 ? Math.max(...contatos.map(c => c.id)) + 1 : 1;
-
-            contatos.push({
-                id: novoId,
-                nome: nomeLimpo,
-                status: status,
-                favorito: false,
-                iniciais: gerarIniciais(nomeLimpo)
-            });
-
-            modalAdicionar.classList.remove('ativo');
-            inputNovoNome.value = '';
-            salvarContatos();
-        });
-
-        // Excluir
-        document.getElementById('btnCancelarExcluir').addEventListener('click', () => {
-            modalExcluir.classList.remove('ativo');
-            idParaExcluir = null;
-        });
-
-        document.getElementById('btnConfirmarExcluir').addEventListener('click', () => {
-            contatos = contatos.filter(c => c.id !== idParaExcluir);
-            modalExcluir.classList.remove('ativo');
-            idParaExcluir = null;
-            salvarContatos();
-        });
-
-        // Busca
-        buscaEl.addEventListener('input', renderizarLista);
-
-        // Abas
         abasEl.forEach(aba => {
             aba.addEventListener('click', () => {
                 abasEl.forEach(a => a.classList.remove('ativa'));
                 aba.classList.add('ativa');
                 filtroAtual = aba.dataset.filtro;
-                renderizarLista();
+                buscaEl.value = '';
+                carregarListaContatos();
             });
         });
 
-        renderizarLista();
+        let timerBusca;
+        buscaEl.addEventListener('input', () => {
+            clearTimeout(timerBusca);
+            timerBusca = setTimeout(() => {
+                if (filtroAtual !== 'pendentes') {
+                    carregarListaContatos();
+                }
+            }, 300);
+        });
+
+        document.getElementById('btnAbrirModal').addEventListener('click', () => {
+            modalAdicionar.classList.add('ativo');
+            buscarUsuario.value = '';
+            resultadoBusca.style.display = 'none';
+            erroBusca.style.display = 'none';
+            usuarioEncontrado = null;
+            btnEnviarSolicitacao.disabled = true;
+            buscarUsuario.focus();
+        });
+
+        document.getElementById('btnCancelarAdicionar').addEventListener('click', () => {
+            modalAdicionar.classList.remove('ativo');
+            usuarioEncontrado = null;
+        });
+
+        let timerBuscaUsuario;
+        buscarUsuario.addEventListener('input', () => {
+            clearTimeout(timerBuscaUsuario);
+            resultadoBusca.style.display = 'none';
+            erroBusca.style.display = 'none';
+            btnEnviarSolicitacao.disabled = true;
+            usuarioEncontrado = null;
+
+            const texto = buscarUsuario.value.trim();
+            if (texto.length < 2) return;
+
+            timerBuscaUsuario = setTimeout(async () => {
+                procurando.style.display = 'block';
+                const resultados = await buscarUsuarioPorNome(texto);
+                procurando.style.display = 'none';
+
+                if (!resultados || resultados.length === 0) {
+                    erroBusca.textContent = 'Nenhum usuário encontrado';
+                    erroBusca.style.display = 'block';
+                    return;
+                }
+
+                usuarioEncontrado = resultados[0];
+                nomeEncontrado.textContent = `👤 ${usuarioEncontrado.name}`;
+                resultadoBusca.style.display = 'block';
+                btnEnviarSolicitacao.disabled = false;
+            }, 500);
+        });
+
+        btnEnviarSolicitacao.addEventListener('click', async () => {
+            if (!usuarioEncontrado) return;
+
+            btnEnviarSolicitacao.disabled = true;
+            btnEnviarSolicitacao.textContent = 'Enviando...';
+
+            const resultado = await enviarSolicitacao(usuarioEncontrado.id);
+
+            if (resultado.success) {
+                mostrarSucesso('✅ Convite enviado!');
+                modalAdicionar.classList.remove('ativo');
+            } else {
+                mostrarErro(resultado.error || 'Erro ao enviar convite');
+            }
+
+            btnEnviarSolicitacao.textContent = 'Enviar Convite';
+            btnEnviarSolicitacao.disabled = false;
+        });
+
+        document.getElementById('btnCancelarExcluir').addEventListener('click', () => {
+            modalExcluir.classList.remove('ativo');
+            idParaExcluir = null;
+        });
+
+        document.getElementById('btnConfirmarExcluir').addEventListener('click', async () => {
+            if (!idParaExcluir) return;
+            await excluirAmizade(idParaExcluir);
+        });
+
+        async function inicializar() {
+            await verificarUsuario();
+            if (usuarioAtual) {
+                await carregarPerfil();
+                carregarListaContatos();
+            }
+        }
+
+        inicializar();
     </script>
 </body>
 </html>
