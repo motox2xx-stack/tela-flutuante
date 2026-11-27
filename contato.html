@@ -700,75 +700,89 @@
 
         async function carregarListaContatos() {
             if (!usuarioAtual) {
-                listaEl.innerHTML = `<div class="vazio">⏳ Carregando...</div>`;
+                listaEl.innerHTML = `<div class="vazio">🔒 Você precisa estar logado.</div>`;
                 return;
             }
 
             listaEl.innerHTML = `<div class="carregando">⏳ Carregando contatos...</div>`;
 
-            let query;
+            try {
+                let solicitacoes = [];
 
-            if (filtroAtual === 'amigos' || filtroAtual === 'online') {
-                query = supabaseClient
+                if (filtroAtual === 'amigos' || filtroAtual === 'online') {
+                    const { data: todosPedidos, error: erro1 } = await supabaseClient
+                        .from('friend_requests')
+                        .select('id, sender_id, recipient_id, status')
+                        .or(`sender_id.eq.${usuarioAtual.id},recipient_id.eq.${usuarioAtual.id}`);
+
+                    if (erro1) throw erro1;
+
+                    solicitacoes = (todosPedidos || []).filter(p => p.status === 'accepted');
+
+                    const perfisMap = {};
+                    for (const ped of solicitacoes) {
+                        const outroId = ped.sender_id === usuarioAtual.id ? ped.recipient_id : ped.sender_id;
+                        if (!perfisMap[outroId]) {
+                            const { data: p } = await supabaseClient
+                                .from('profiles')
+                                .select('id, name, status, avatar_url')
+                                .eq('id', outroId)
+                                .maybeSingle();
+                            if (p) perfisMap[outroId] = p;
+                        }
+                        ped.perfil = perfisMap[outroId];
+                    }
+
+                    solicitacoes = solicitacoes.filter(p => p.perfil);
+                } else if (filtroAtual === 'pendentes') {
+                    const { data: pendentes, error: erro2 } = await supabaseClient
+                        .from('friend_requests')
+                        .select('id, sender_id, recipient_id, status')
+                        .eq('recipient_id', usuarioAtual.id)
+                        .eq('status', 'pending');
+
+                    if (erro2) throw erro2;
+
+                    solicitacoes = pendentes || [];
+
+                    for (const ped of solicitacoes) {
+                        const { data: p } = await supabaseClient
+                            .from('profiles')
+                            .select('id, name, status, avatar_url')
+                            .eq('id', ped.sender_id)
+                            .maybeSingle();
+                        ped.remetente = p;
+                    }
+                }
+
+                const { count: qtdPendentes, error: erroCount } = await supabaseClient
                     .from('friend_requests')
-                    .select('*, remetente:profiles!friend_requests_sender_id_fkey(id, name, status, avatar_url), destinatario:profiles!friend_requests_recipient_id_fkey(id, name, status, avatar_url)')
-                    .or(`sender_id.eq.${usuarioAtual.id},recipient_id.eq.${usuarioAtual.id}`)
-                    .eq('status', 'accepted');
-            } else if (filtroAtual === 'pendentes') {
-                query = supabaseClient
-                    .from('friend_requests')
-                    .select('*, remetente:profiles!friend_requests_sender_id_fkey(id, name, status, avatar_url)')
+                    .select('*', { count: 'exact', head: true })
                     .eq('recipient_id', usuarioAtual.id)
                     .eq('status', 'pending');
-            }
 
-            const { data: solicitacoes, error } = await query;
+                if (!erroCount) badgePendentes.textContent = qtdPendentes || 0;
 
-            if (error) {
-                listaEl.innerHTML = `<div class="vazio">❌ Erro ao carregar</div>`;
-                console.error(error);
-                return;
-            }
+                const termoBusca = buscaEl.value.toLowerCase().trim();
+                let itensParaExibir = solicitacoes || [];
 
-            const { count: qtdPendentes } = await supabaseClient
-                .from('friend_requests')
-                .select('*', { count: 'exact', head: true })
-                .eq('recipient_id', usuarioAtual.id)
-                .eq('status', 'pending');
-
-            badgePendentes.textContent = qtdPendentes || 0;
-
-            const termoBusca = buscaEl.value.toLowerCase().trim();
-            let itensParaExibir = [];
-
-            if (filtroAtual === 'pendentes') {
-                itensParaExibir = (solicitacoes || []).map(req => ({
-                    ...req,
-                    perfil: req.remetente
-                }));
-            } else {
-                itensParaExibir = (solicitacoes || [])
-                    .map(req => {
-                        const ehRemetente = req.sender_id === usuarioAtual.id;
-                        const perfil = ehRemetente ? req.destinatario : req.remetente;
-                        return { ...req, perfil };
-                    })
-                    .filter(item => item.perfil);
-
-                if (filtroAtual === 'online') {
-                    itensParaExibir = itensParaExibir.filter(item => item.perfil.status === 'online');
+                if (filtroAtual === 'amigos' || filtroAtual === 'online') {
+                    if (filtroAtual === 'online') {
+                        itensParaExibir = itensParaExibir.filter(item => item.perfil?.status === 'online');
+                    }
+                    if (termoBusca) {
+                        itensParaExibir = itensParaExibir.filter(item =>
+                            item.perfil?.name?.toLowerCase().includes(termoBusca)
+                        );
+                    }
+                    itensParaExibir.sort((a, b) => (a.perfil?.name || '').localeCompare(b.perfil?.name || '', 'pt-BR'));
                 }
 
-                if (termoBusca) {
-                    itensParaExibir = itensParaExibir.filter(item =>
-                        item.perfil.name.toLowerCase().includes(termoBusca)
-                    );
-                }
-
-                itensParaExibir.sort((a, b) => a.perfil.name.localeCompare(b.perfil.name, 'pt-BR'));
+                renderizarLista(itensParaExibir);
+            } catch (erro) {
+                console.error('❌ Erro ao carregar contatos:', erro);
+                listaEl.innerHTML = `<div class="vazio">⚠️ Não foi possível carregar.</div>`;
             }
-
-            renderizarLista(itensParaExibir);
         }
 
         function renderizarLista(itens) {
@@ -785,7 +799,7 @@
 
             if (filtroAtual === 'pendentes') {
                 listaEl.innerHTML = itens.map(req => {
-                    const nomePerfil = req.perfil?.name || 'Usuário';
+                    const nomePerfil = req.remetente?.name || 'Usuário';
                     return `
                         <div class="card-contato" data-id="${req.id}">
                             <div class="contato-foto">
