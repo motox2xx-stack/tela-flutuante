@@ -812,6 +812,35 @@
     </div>
 
     <script>
+        // ==========================================
+        // 🔗 SINCRONIZAÇÃO COM TELA FLUTUANTE
+        // ==========================================
+        const canalFlutuante = new BroadcastChannel('gs_sincronizacao');
+        let janelaFlutuanteAberta = null;
+
+        // Avisa a flutuante quando há mensagem nova
+        function avisarFlutuante(tipo, dados) {
+            if (janelaFlutuanteAberta && !janelaFlutuanteAberta.closed) {
+                canalFlutuante.postMessage({ tipo, dados, origem: 'principal' });
+            }
+        }
+
+        // Recebe da flutuante
+        canalFlutuante.onmessage = (evento) => {
+            if (evento.data.origem === 'flutuante') return;
+            const { tipo, dados } = evento.data;
+            if (tipo === 'nova_mensagem') {
+                adicionarMensagemRecebida(dados.texto, dados.hora, dados.remetente);
+            }
+        };
+
+        // Fecha a flutuante automaticamente quando fechar a principal
+        window.addEventListener('beforeunload', () => {
+            if (janelaFlutuanteAberta && !janelaFlutuanteAberta.closed) {
+                janelaFlutuanteAberta.close();
+            }
+        });
+
         // === DADOS DOS CONTATOS ===
         const dadosContatos = {
             'João': { avatar: '👨', status: 'online', textoStatus: '● Disponível' },
@@ -889,7 +918,7 @@
 
         menuTelaFlutuante.addEventListener('click', () => {
             fecharMenu();
-            window.open('tela-flutuante.html', '_blank', 'width=400,height=600,top=100,left=100');
+            janelaFlutuanteAberta = window.open('tela-flutuante.html', '_blank', 'width=420,height=650,top=100,left=100');
         });
 
         // === AJUDA ===
@@ -1041,6 +1070,40 @@
             mensagemInput.focus();
         }
 
+        // === ADICIONAR MENSAGEM RECEBIDA (TELA FLUTUANTE / EXTERNA) ===
+        function adicionarMensagemRecebida(texto, hora, remetente) {
+            const alvoConversa = contatoAtual || remetente || 'Amigo';
+            const horaFormatada = hora || new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+
+            salvarMensagem(alvoConversa, {
+                tipo: 'recebida',
+                texto: texto,
+                hora: horaFormatada
+            });
+
+            if (contatoAtual && remetente && contatoAtual !== remetente) {
+                return;
+            }
+
+            const semMensagensEl = document.getElementById('semMensagens');
+            if (semMensagensEl) semMensagensEl.style.display = 'none';
+
+            const msgWrapper = document.createElement('div');
+            msgWrapper.className = 'mensagem recebida';
+            msgWrapper.innerHTML = `
+                <div class="texto-mensagem">${texto}</div>
+                <div class="hora">${horaFormatada}</div>
+                <span class="mensagem-mais">⋯</span>
+                <div class="menu-mensagem-acoes">
+                    <div class="menu-mensagem-item" data-acao="copiar">📋 Copiar</div>
+                    <div class="menu-mensagem-item" data-acao="responder">↩️ Responder</div>
+                </div>
+            `;
+            chatArea.appendChild(msgWrapper);
+            chatArea.scrollTop = chatArea.scrollHeight;
+            vincularMenuMensagem(msgWrapper);
+        }
+
         // === ENVIAR MENSAGEM ===
         function enviarMensagem() {
             const texto = mensagemInput.value.trim();
@@ -1084,6 +1147,12 @@
                 texto: textoFinal,
                 citou: mensagemParaCitar,
                 hora: hora
+            });
+
+            avisarFlutuante('nova_mensagem', {
+                texto: textoFinal,
+                hora: hora,
+                remetente: perfilNome.textContent
             });
 
             mensagemInput.value = '';
