@@ -1386,6 +1386,36 @@
     </div>
 
     <script>
+        // =====================================================
+        // 🪟 TELA FLUTUANTE — Escuta sincronização do principal
+        // =====================================================
+        window.addEventListener('message', (evento) => {
+            if (evento.origin !== window.location.origin) return;
+            if (!evento.data || evento.data.origem === 'flutuante') return;
+
+            if (evento.data.tipo === 'gs_sincronizacao') {
+                const d = evento.data.dados;
+                adicionarMensagemFlutuante(d.texto, d.hora, d.de, false);
+            }
+        });
+
+        function adicionarMensagemFlutuante(texto, hora, de, eEu) {
+            const chatArea = document.getElementById('areaChat');
+            if (!chatArea) return;
+
+            const classe = eEu ? 'mensagem enviada' : 'mensagem recebida';
+            const nomeExibicao = eEu ? 'Você' : de;
+
+            const novaMsg = document.createElement('div');
+            novaMsg.className = classe;
+            novaMsg.innerHTML = `
+                <div class="texto-mensagem"><strong>${nomeExibicao}:</strong> ${texto}</div>
+                <div class="hora">${hora}</div>
+            `;
+            chatArea.appendChild(novaMsg);
+            chatArea.scrollTop = chatArea.scrollHeight;
+        }
+
         // ==========================================
         // 🎯 FUNÇÃO ÚNICA — BOTÃO ATIVO / INATIVO (igual ao Chat)
         // ==========================================
@@ -2182,7 +2212,7 @@
             localStorage.setItem(CHAVE_HISTORICO, JSON.stringify(mensagens));
         }
 
-        document.addEventListener('DOMContentLoaded', carregarHistorico);
+        carregarHistorico();
 
         // ==========================================
         // 🖱️ JANELINHA DO CONTATO — Chat | Ligação | Transmissão de Tela
