@@ -6,7 +6,13 @@
     <title>Entrar — Guardian Shield</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: sans-serif;
+        }
+
         body {
             background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
             color: white;
@@ -16,6 +22,7 @@
             justify-content: center;
             align-items: center;
         }
+
         .caixa {
             background: rgba(30, 41, 59, 0.8);
             border-radius: 12px;
@@ -24,19 +31,32 @@
             max-width: 420px;
             border: 1px solid rgba(148, 163, 184, 0.2);
         }
-        h1 { text-align: center; margin-bottom: 1.5rem; font-size: 1.4rem; }
-        label { display: block; margin-bottom: 0.4rem; font-size: 0.9rem; color: #cbd5e1; }
-        input, select {
+
+        h1 {
+            text-align: center;
+            margin-bottom: 1.5rem;
+            font-size: 1.4rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.4rem;
+            font-size: 0.9rem;
+            color: #cbd5e1;
+        }
+
+        input,
+        select {
             width: 100%;
             padding: 0.75rem;
             border-radius: 8px;
-            border: none;
             font-size: 1rem;
             margin-bottom: 1rem;
             background: #1e293b;
             color: white;
             border: 1px solid #475569;
         }
+
         button {
             width: 100%;
             padding: 0.75rem;
@@ -47,25 +67,122 @@
             cursor: pointer;
             transition: background 0.2s;
         }
-        .primario { background: #2563eb; color: white; margin-bottom: 1rem; }
-        .primario:hover { background: #1d4ed8; }
-        .mensagem { margin-top: 1rem; padding: 0.75rem; border-radius: 8px; display: none; font-size: 0.9rem; white-space: pre-line; }
-        .sucesso { background: rgba(22, 163, 74, 0.2); color: #86efac; display: block !important; }
-        .erro { background: rgba(220, 38, 38, 0.2); color: #fca5a5; display: block !important; }
-        .escondido { display: none !important; }
-        .dica { font-size: 0.8rem; color: #94a3b8; margin-top: -0.75rem; margin-bottom: 1rem; }
-        .link { color: #93c5fd; cursor: pointer; text-align: center; margin-top: 0.5rem; font-size: 0.9rem; }
-        .link:hover { text-decoration: underline; }
-        .abas { display: flex; margin-bottom: 1.5rem; border-bottom: 1px solid #334155; }
-        .abas button { background: transparent; border: none; color: #94a3b8; padding: 0.75rem; flex: 1; border-bottom: 2px solid transparent; cursor: pointer; font-size: 1rem; }
-        .abas button.ativo { color: white; border-bottom: 2px solid #2563eb; }
-        .divisor { text-align: center; color: #64748b; font-size: 0.85rem; margin: 1.2rem 0; position: relative; }
-        .divisor::before, .divisor::after {
-            content: ''; position: absolute; top: 50%; width: 35%; height: 1px; background: #334155;
+
+        button:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
         }
-        .divisor::before { left: 0; }
-        .divisor::after { right: 0; }
-        .futuro { color: #64748b; font-size: 0.8rem; text-align: center; margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid #334155; }
+
+        .primario {
+            background: #2563eb;
+            color: white;
+            margin-bottom: 1rem;
+        }
+
+        .primario:hover:not(:disabled) {
+            background: #1d4ed8;
+        }
+
+        .mensagem {
+            margin-top: 1rem;
+            padding: 0.75rem;
+            border-radius: 8px;
+            display: none;
+            font-size: 0.9rem;
+            white-space: pre-line;
+        }
+
+        .sucesso {
+            background: rgba(22, 163, 74, 0.2);
+            color: #86efac;
+            display: block !important;
+        }
+
+        .erro {
+            background: rgba(220, 38, 38, 0.2);
+            color: #fca5a5;
+            display: block !important;
+        }
+
+        .escondido {
+            display: none !important;
+        }
+
+        .dica {
+            font-size: 0.8rem;
+            color: #94a3b8;
+            margin-top: -0.75rem;
+            margin-bottom: 1rem;
+        }
+
+        .link {
+            color: #93c5fd;
+            cursor: pointer;
+            text-align: center;
+            margin-top: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .link:hover {
+            text-decoration: underline;
+        }
+
+        .abas {
+            display: flex;
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid #334155;
+        }
+
+        .abas button {
+            background: transparent;
+            border: none;
+            color: #94a3b8;
+            padding: 0.75rem;
+            flex: 1;
+            border-bottom: 2px solid transparent;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        .abas button.ativo {
+            color: white;
+            border-bottom: 2px solid #2563eb;
+        }
+
+        .divisor {
+            text-align: center;
+            color: #64748b;
+            font-size: 0.85rem;
+            margin: 1.2rem 0;
+            position: relative;
+        }
+
+        .divisor::before,
+        .divisor::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            width: 35%;
+            height: 1px;
+            background: #334155;
+        }
+
+        .divisor::before {
+            left: 0;
+        }
+
+        .divisor::after {
+            right: 0;
+        }
+
+        .futuro {
+            color: #64748b;
+            font-size: 0.8rem;
+            text-align: center;
+            margin-top: 1.5rem;
+            padding-top: 1rem;
+            border-top: 1px solid #334155;
+        }
     </style>
 </head>
 <body>
@@ -84,7 +201,7 @@
             <label for="senhaLogin">Senha</label>
             <input type="password" id="senhaLogin" placeholder="Sua senha">
 
-            <button class="primario" onclick="entrar()">🔑 Entrar</button>
+            <button class="primario" id="btnEntrar" onclick="entrar()">🔑 Entrar</button>
 
             <div style="text-align:center; margin-bottom:1rem;">
                 <span class="link" onclick="mostrarAba('recuperar')">Esqueceu a senha?</span>
@@ -99,7 +216,7 @@
 
         <div id="telaCadastro" class="escondido">
             <h2 style="text-align:center; margin-bottom:1rem; font-size:1.1rem;">Criar nova conta</h2>
-            
+
             <label for="nome">Nome completo</label>
             <input type="text" id="nome" placeholder="Seu nome">
 
@@ -127,8 +244,8 @@
             <label for="nascimento">Data de nascimento</label>
             <input type="date" id="nascimento">
 
-            <button class="primario" onclick="cadastrar()">📝 Criar conta</button>
-            
+            <button class="primario" id="btnCadastrar" onclick="cadastrar()">📝 Criar conta</button>
+
             <div class="link" onclick="mostrarAba('login')">← Voltar para entrar</div>
 
             <div id="msgCadastro" class="mensagem"></div>
@@ -136,7 +253,7 @@
 
         <div id="telaRecuperar" class="escondido">
             <h2 style="text-align:center; margin-bottom:1rem; font-size:1.1rem;">Recuperar senha</h2>
-            
+
             <label for="emailRecupera">Seu e-mail</label>
             <input type="email" id="emailRecupera" placeholder="Digite o e-mail da sua conta">
 
@@ -149,8 +266,8 @@
             <label for="novaSenhaConfirma">Confirmar nova senha</label>
             <input type="password" id="novaSenhaConfirma" placeholder="Digite a nova senha novamente">
 
-            <button class="primario" onclick="recuperarSenha()">🔓 Redefinir senha</button>
-            
+            <button class="primario" id="btnRecuperar" onclick="recuperarSenha()">🔓 Redefinir senha</button>
+
             <div class="link" onclick="mostrarAba('login')">← Voltar para entrar</div>
 
             <div id="msgRecupera" class="mensagem"></div>
@@ -161,196 +278,259 @@
         </div>
     </div>
 
-<script>
-const SUPABASE_URL = 'https://anvdihxzwvbpomejydid.supabase.co';
-const SUPABASE_KEY = 'sb_publishable_3OliyDBDFdpD_skoxIx-EQ_2eRE1tme';
+    <script>
+        const SUPABASE_URL = 'https://anvdihxzwvbpomejydid.supabase.co';
+        const SUPABASE_KEY = 'sb_publishable_3OliyDBDFdpD_skoxIx-EQ_2eRE1tme';
 
-// ✅ Corrigido: renomeado para supabaseClient para não conflitar
-const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-function mostrarAba(nome) {
-    document.getElementById('telaLogin').classList.add('escondido');
-    document.getElementById('telaCadastro').classList.add('escondido');
-    document.getElementById('telaRecuperar').classList.add('escondido');
-    document.getElementById('abaLogin').classList.remove('ativo');
-    document.getElementById('abaCadastro').classList.remove('ativo');
-    limparMensagens();
-    
-    if (nome === 'login') {
-        document.getElementById('telaLogin').classList.remove('escondido');
-        document.getElementById('abaLogin').classList.add('ativo');
-    } else if (nome === 'cadastro') {
-        document.getElementById('telaCadastro').classList.remove('escondido');
-        document.getElementById('abaCadastro').classList.add('ativo');
-    } else if (nome === 'recuperar') {
-        document.getElementById('telaRecuperar').classList.remove('escondido');
-    }
-}
-
-function limparMensagens() {
-    ['msgCadastro', 'msgLogin', 'msgRecupera'].forEach(id => {
-        const el = document.getElementById(id);
-        el.textContent = '';
-        el.className = 'mensagem';
-    });
-}
-
-function mostrarMensagem(elementoId, texto, tipo) {
-    const el = document.getElementById(elementoId);
-    el.textContent = texto;
-    el.className = `mensagem ${tipo}`;
-}
-
-function gerarCodigoConta() {
-    return 'GSH-' + Math.random().toString(36).substring(2, 10).toUpperCase();
-}
-
-async function cadastrar() {
-    const nome = document.getElementById('nome').value.trim();
-    const email = document.getElementById('email').value.trim();
-    const senha = document.getElementById('senha').value;
-    const senhaConfirma = document.getElementById('senhaConfirma').value;
-    const codigoRecuperacao = document.getElementById('codigoRecuperacao').value.trim();
-    const sexo = document.getElementById('sexo').value;
-    const nascimento = document.getElementById('nascimento').value;
-
-    if (!nome || !email || !senha || !codigoRecuperacao) {
-        mostrarMensagem('msgCadastro', '❌ Preencha todos os campos obrigatórios', 'erro');
-        return;
-    }
-    if (senha.length < 6) {
-        mostrarMensagem('msgCadastro', '❌ A senha precisa ter pelo menos 6 caracteres', 'erro');
-        return;
-    }
-    if (senha !== senhaConfirma) {
-        mostrarMensagem('msgCadastro', '❌ As senhas não coincidem. Digite igual nos dois campos.', 'erro');
-        return;
-    }
-
-    try {
-        const { data: authData, error: authErro } = await supabaseClient.auth.signUp({
-            email: email,
-            password: senha
-        });
-
-        if (authErro) throw authErro;
-
-        const codigoConta = gerarCodigoConta();
-
-        const { error: tabelaErro } = await supabaseClient.from('usuarios').insert({
-            id: authData.user.id,
-            codigo_conta: codigoConta,
-            nome: nome,
-            email: email,
-            senha_hash: btoa(codigoRecuperacao),
-            sexo: sexo,
-            data_nascimento: nascimento || null
-        });
-
-        if (tabelaErro) throw tabelaErro;
-
-        mostrarMensagem('msgCadastro', `✅ Conta criada com sucesso!\nSeu código: ${codigoConta}`, 'sucesso');
-        
-        localStorage.setItem('usuarioNome', nome);
-        localStorage.setItem('usuarioEmail', email);
-        localStorage.setItem('usuarioCodigo', codigoConta);
-        
-        setTimeout(() => mostrarAba('login'), 2500);
-
-    } catch (erro) {
-        console.error(erro);
-        if (erro.message.includes('email')) {
-            mostrarMensagem('msgCadastro', '❌ Este e-mail já está cadastrado', 'erro');
-        } else {
-            mostrarMensagem('msgCadastro', '❌ Erro: ' + erro.message, 'erro');
+        async function verificarSessao() {
+            try {
+                const { data: { session } } = await supabaseClient.auth.getSession();
+                if (session?.access_token) {
+                    window.location.href = 'principal.html';
+                }
+            } catch (e) {
+                console.log('Sem sessão ativa');
+            }
         }
-    }
-}
+        verificarSessao();
 
-async function entrar() {
-    const email = document.getElementById('emailLogin').value.trim();
-    const senha = document.getElementById('senhaLogin').value;
+        function mostrarAba(nome) {
+            document.getElementById('telaLogin').classList.add('escondido');
+            document.getElementById('telaCadastro').classList.add('escondido');
+            document.getElementById('telaRecuperar').classList.add('escondido');
+            document.getElementById('abaLogin').classList.remove('ativo');
+            document.getElementById('abaCadastro').classList.remove('ativo');
+            limparMensagens();
 
-    if (!email || !senha) {
-        mostrarMensagem('msgLogin', '❌ Digite seu e-mail e senha', 'erro');
-        return;
-    }
-
-    try {
-        const { data, error } = await supabaseClient.auth.signInWithPassword({
-            email: email,
-            password: senha
-        });
-
-        if (error) throw error;
-
-        const { data: usuario } = await supabaseClient
-            .from('usuarios')
-            .select('nome, codigo_conta')
-            .eq('id', data.user.id)
-            .single();
-
-        mostrarMensagem('msgLogin', `✅ Bem-vindo, ${usuario?.nome || 'Usuário'}!`, 'sucesso');
-        
-        localStorage.setItem('usuarioNome', usuario?.nome || 'Usuário');
-        localStorage.setItem('usuarioEmail', email);
-        localStorage.setItem('usuarioCodigo', usuario?.codigo_conta || '');
-        
-        setTimeout(() => {
-            window.location.href = 'principal.html';
-        }, 1500);
-
-    } catch (erro) {
-        console.error(erro);
-        mostrarMensagem('msgLogin', '❌ E-mail ou senha incorretos', 'erro');
-    }
-}
-
-async function recuperarSenha() {
-    const email = document.getElementById('emailRecupera').value.trim();
-    const codigoRecupera = document.getElementById('codigoRecupera').value.trim();
-    const novaSenha = document.getElementById('novaSenha').value;
-    const novaSenhaConfirma = document.getElementById('novaSenhaConfirma').value;
-
-    if (!email || !codigoRecupera || !novaSenha) {
-        mostrarMensagem('msgRecupera', '❌ Preencha todos os campos', 'erro');
-        return;
-    }
-    if (novaSenha.length < 6) {
-        mostrarMensagem('msgRecupera', '❌ Nova senha precisa ter pelo menos 6 caracteres', 'erro');
-        return;
-    }
-    if (novaSenha !== novaSenhaConfirma) {
-        mostrarMensagem('msgRecupera', '❌ As senhas não coincidem. Digite igual nos dois campos.', 'erro');
-        return;
-    }
-
-    try {
-        const { data: usuarios, error: buscaErro } = await supabaseClient
-            .from('usuarios')
-            .select('id, senha_hash')
-            .eq('email', email);
-
-        if (buscaErro) throw buscaErro;
-        if (!usuarios || usuarios.length === 0) {
-            mostrarMensagem('msgRecupera', '❌ E-mail não encontrado', 'erro');
-            return;
+            if (nome === 'login') {
+                document.getElementById('telaLogin').classList.remove('escondido');
+                document.getElementById('abaLogin').classList.add('ativo');
+            } else if (nome === 'cadastro') {
+                document.getElementById('telaCadastro').classList.remove('escondido');
+                document.getElementById('abaCadastro').classList.add('ativo');
+            } else if (nome === 'recuperar') {
+                document.getElementById('telaRecuperar').classList.remove('escondido');
+            }
         }
 
-        const usuario = usuarios[0];
-        if (usuario.senha_hash !== btoa(codigoRecupera)) {
-            mostrarMensagem('msgRecupera', '❌ Código de recuperação incorreto', 'erro');
-            return;
+        function limparMensagens() {
+            ['msgCadastro', 'msgLogin', 'msgRecupera'].forEach(id => {
+                const el = document.getElementById(id);
+                el.textContent = '';
+                el.className = 'mensagem';
+            });
         }
 
-        mostrarMensagem('msgRecupera', '✅ Enviamos um link de redefinição para seu e-mail! Verifique sua caixa de entrada.', 'sucesso');
-        await supabaseClient.auth.resetPasswordForEmail(email);
+        function mostrarMensagem(elementoId, texto, tipo) {
+            const el = document.getElementById(elementoId);
+            el.textContent = texto;
+            el.className = `mensagem ${tipo}`;
+        }
 
-    } catch (erro) {
-        console.error(erro);
-        mostrarMensagem('msgRecupera', '❌ Erro: ' + erro.message, 'erro');
-    }
-}
-</script>
+        function gerarCodigoConta() {
+            return 'GSH-' + Math.random().toString(36).substring(2, 10).toUpperCase();
+        }
+
+        async function cadastrar() {
+            const btn = document.getElementById('btnCadastrar');
+            btn.disabled = true;
+            btn.textContent = '⏳ Criando conta...';
+
+            const nome = document.getElementById('nome').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const senha = document.getElementById('senha').value;
+            const senhaConfirma = document.getElementById('senhaConfirma').value;
+            const codigoRecuperacao = document.getElementById('codigoRecuperacao').value.trim();
+            const sexo = document.getElementById('sexo').value;
+            const nascimento = document.getElementById('nascimento').value;
+
+            if (!nome || !email || !senha || !codigoRecuperacao) {
+                mostrarMensagem('msgCadastro', '❌ Preencha todos os campos obrigatórios', 'erro');
+                btn.disabled = false;
+                btn.textContent = '📝 Criar conta';
+                return;
+            }
+            if (senha.length < 6) {
+                mostrarMensagem('msgCadastro', '❌ A senha precisa ter pelo menos 6 caracteres', 'erro');
+                btn.disabled = false;
+                btn.textContent = '📝 Criar conta';
+                return;
+            }
+            if (senha !== senhaConfirma) {
+                mostrarMensagem('msgCadastro', '❌ As senhas não coincidem. Digite igual nos dois campos.', 'erro');
+                btn.disabled = false;
+                btn.textContent = '📝 Criar conta';
+                return;
+            }
+
+            try {
+                if (!navigator.onLine) throw new Error('Sem conexão com a internet');
+
+                const { data: authData, error: authErro } = await supabaseClient.auth.signUp({
+                    email: email,
+                    password: senha
+                });
+
+                if (authErro) throw authErro;
+
+                const codigoConta = gerarCodigoConta();
+
+                const { error: tabelaErro } = await supabaseClient.from('usuarios').insert({
+                    id: authData.user.id,
+                    codigo_conta: codigoConta,
+                    nome: nome,
+                    email: email,
+                    senha_hash: btoa(codigoRecuperacao),
+                    sexo: sexo,
+                    data_nascimento: nascimento || null
+                });
+
+                if (tabelaErro) throw tabelaErro;
+
+                mostrarMensagem('msgCadastro', `✅ Conta criada com sucesso!\nSeu código: ${codigoConta}`, 'sucesso');
+
+                localStorage.setItem('usuarioNome', nome);
+                localStorage.setItem('usuarioEmail', email);
+                localStorage.setItem('usuarioCodigo', codigoConta);
+
+                setTimeout(() => mostrarAba('login'), 2500);
+            } catch (erro) {
+                console.error(erro);
+                if (!navigator.onLine) {
+                    mostrarMensagem('msgCadastro', '❌ Sem conexão com a internet. Verifique sua rede.', 'erro');
+                } else if (erro.message?.includes('email')) {
+                    mostrarMensagem('msgCadastro', '❌ Este e-mail já está cadastrado', 'erro');
+                } else {
+                    mostrarMensagem('msgCadastro', '❌ Erro: ' + erro.message, 'erro');
+                }
+            } finally {
+                btn.disabled = false;
+                btn.textContent = '📝 Criar conta';
+            }
+        }
+
+        async function entrar() {
+            const btn = document.getElementById('btnEntrar');
+            btn.disabled = true;
+            btn.textContent = '⏳ Entrando...';
+
+            const email = document.getElementById('emailLogin').value.trim();
+            const senha = document.getElementById('senhaLogin').value;
+
+            if (!email || !senha) {
+                mostrarMensagem('msgLogin', '❌ Digite seu e-mail e senha', 'erro');
+                btn.disabled = false;
+                btn.textContent = '🔑 Entrar';
+                return;
+            }
+
+            try {
+                if (!navigator.onLine) throw new Error('Sem conexão com a internet');
+
+                const { data, error } = await supabaseClient.auth.signInWithPassword({
+                    email: email,
+                    password: senha
+                });
+
+                if (error) throw error;
+
+                const { data: usuario } = await supabaseClient
+                    .from('usuarios')
+                    .select('nome, codigo_conta')
+                    .eq('id', data.user.id)
+                    .single();
+
+                mostrarMensagem('msgLogin', `✅ Bem-vindo, ${usuario?.nome || 'Usuário'}!`, 'sucesso');
+
+                localStorage.setItem('usuarioNome', usuario?.nome || 'Usuário');
+                localStorage.setItem('usuarioEmail', email);
+                localStorage.setItem('usuarioCodigo', usuario?.codigo_conta || '');
+
+                setTimeout(() => {
+                    window.location.href = 'principal.html';
+                }, 1500);
+            } catch (erro) {
+                console.error(erro);
+                if (!navigator.onLine) {
+                    mostrarMensagem('msgLogin', '❌ Sem internet. Verifique sua conexão.', 'erro');
+                } else {
+                    mostrarMensagem('msgLogin', '❌ E-mail ou senha incorretos', 'erro');
+                }
+            } finally {
+                btn.disabled = false;
+                btn.textContent = '🔑 Entrar';
+            }
+        }
+
+        async function recuperarSenha() {
+            const btn = document.getElementById('btnRecuperar');
+            btn.disabled = true;
+            btn.textContent = '⏳ Enviando...';
+
+            const email = document.getElementById('emailRecupera').value.trim();
+            const codigoRecupera = document.getElementById('codigoRecupera').value.trim();
+            const novaSenha = document.getElementById('novaSenha').value;
+            const novaSenhaConfirma = document.getElementById('novaSenhaConfirma').value;
+
+            if (!email || !codigoRecupera || !novaSenha) {
+                mostrarMensagem('msgRecupera', '❌ Preencha todos os campos', 'erro');
+                btn.disabled = false;
+                btn.textContent = '🔓 Redefinir senha';
+                return;
+            }
+            if (novaSenha.length < 6) {
+                mostrarMensagem('msgRecupera', '❌ Nova senha precisa ter pelo menos 6 caracteres', 'erro');
+                btn.disabled = false;
+                btn.textContent = '🔓 Redefinir senha';
+                return;
+            }
+            if (novaSenha !== novaSenhaConfirma) {
+                mostrarMensagem('msgRecupera', '❌ As senhas não coincidem. Digite igual nos dois campos.', 'erro');
+                btn.disabled = false;
+                btn.textContent = '🔓 Redefinir senha';
+                return;
+            }
+
+            try {
+                if (!navigator.onLine) throw new Error('Sem conexão com a internet');
+
+                const { data: usuarios, error: buscaErro } = await supabaseClient
+                    .from('usuarios')
+                    .select('id, senha_hash')
+                    .eq('email', email);
+
+                if (buscaErro) throw buscaErro;
+                if (!usuarios || usuarios.length === 0) {
+                    mostrarMensagem('msgRecupera', '❌ E-mail não encontrado', 'erro');
+                    btn.disabled = false;
+                    btn.textContent = '🔓 Redefinir senha';
+                    return;
+                }
+
+                const usuario = usuarios[0];
+                if (usuario.senha_hash !== btoa(codigoRecupera)) {
+                    mostrarMensagem('msgRecupera', '❌ Código de recuperação incorreto', 'erro');
+                    btn.disabled = false;
+                    btn.textContent = '🔓 Redefinir senha';
+                    return;
+                }
+
+                mostrarMensagem('msgRecupera', '✅ Enviamos um link de redefinição para seu e-mail! Verifique sua caixa de entrada.', 'sucesso');
+                await supabaseClient.auth.resetPasswordForEmail(email);
+            } catch (erro) {
+                console.error(erro);
+                if (!navigator.onLine) {
+                    mostrarMensagem('msgRecupera', '❌ Sem internet. Verifique sua conexão.', 'erro');
+                } else {
+                    mostrarMensagem('msgRecupera', '❌ Erro: ' + erro.message, 'erro');
+                }
+            } finally {
+                btn.disabled = false;
+                btn.textContent = '🔓 Redefinir senha';
+            }
+        }
+    </script>
 </body>
 </html>
