@@ -663,7 +663,7 @@
             </a>
             <div class="sidebar-item" id="menuTelaFlutuante">
                 <span>🪟</span>
-                <span id="textoMenuTela">Tela Flutuante</span>
+                <span>Tela Flutuante</span>
             </div>
             <a href="contato.html" class="sidebar-item">
                 <span>👥</span>
@@ -782,14 +782,14 @@
         </div>
         <p style="text-align:center; font-size:0.8rem; color:#CBD5E1; margin:-0.5rem 0 0.5rem;">Você ↔ Amigo <span style="color:#22C55E;">● Conectado</span></p>
         <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.5rem;">
-            <button style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; padding: 0.6rem 0.3rem; color: #CBD5E1; cursor: pointer; font-size: 0.7rem;">👥<br>Contatos</button>
-            <button style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; padding: 0.6rem 0.3rem; color: #CBD5E1; cursor: pointer; font-size: 0.7rem;">💬<br>Chat</button>
+            <button id="painelBtnContatos" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; padding: 0.6rem 0.3rem; color: #CBD5E1; cursor: pointer; font-size: 0.7rem;">👥<br>Contatos</button>
+            <button id="painelBtnChat" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; padding: 0.6rem 0.3rem; color: #CBD5E1; cursor: pointer; font-size: 0.7rem;">💬<br>Chat</button>
             <button style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; padding: 0.6rem 0.3rem; color: #CBD5E1; cursor: pointer; font-size: 0.7rem;">🔇<br>Mudo</button>
             <button style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; padding: 0.6rem 0.3rem; color: #CBD5E1; cursor: pointer; font-size: 0.7rem;">🔒<br>Travar</button>
             <button style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; padding: 0.6rem 0.3rem; color: #CBD5E1; cursor: pointer; font-size: 0.7rem;">📷<br>Câmera</button>
             <button style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; padding: 0.6rem 0.3rem; color: #CBD5E1; cursor: pointer; font-size: 0.7rem;">🖥️<br>Tela</button>
             <button style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; padding: 0.6rem 0.3rem; color: #CBD5E1; cursor: pointer; font-size: 0.7rem;">📸<br>Foto</button>
-            <button style="background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.2); border-radius: 8px; padding: 0.6rem 0.3rem; color: #EF4444; cursor: pointer; font-size: 0.7rem;">🚪<br>Sair</button>
+            <button id="painelBtnSair" style="background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.2); border-radius: 8px; padding: 0.6rem 0.3rem; color: #EF4444; cursor: pointer; font-size: 0.7rem;">🚪<br>Sair</button>
         </div>
         <div style="display:flex; align-items:center; gap:0.5rem; margin-top:0.25rem;">
             <span>🔊</span>
@@ -822,16 +822,8 @@
         // === ARMAZENAR MENSAGENS ===
         const historicoMensagens = {};
         let contatoAtual = null;
+        let contatoAtualId = null;
         let mensagemParaCitar = null;
-
-        // === ABRIR CONTATO PELA URL (vindo de contato.html) ===
-        window.addEventListener('load', () => {
-            const parametros = new URLSearchParams(window.location.search);
-            const nomeContato = parametros.get('contato');
-            if (nomeContato && typeof abrirConversa === 'function') {
-                abrirConversa(nomeContato);
-            }
-        });
 
         // === MENU LATERAL ===
         const menuToggleBtn = document.getElementById('menuToggleBtn');
@@ -840,7 +832,6 @@
         const sidebarClose = document.getElementById('sidebarClose');
         const menuInicio = document.getElementById('menuInicio');
         const menuTelaFlutuante = document.getElementById('menuTelaFlutuante');
-        const textoMenuTela = document.getElementById('textoMenuTela');
         const perfilNome = document.getElementById('perfilNome');
         const perfilAvatar = document.getElementById('perfilAvatar');
         const perfilStatus = document.getElementById('perfilStatus');
@@ -882,6 +873,19 @@
 
         botaoFlutuante.addEventListener('click', alternarPainel);
         fecharPainel.addEventListener('click', alternarPainel);
+
+        document.getElementById('painelBtnContatos').addEventListener('click', () => {
+            window.location.href = 'contato.html';
+        });
+
+        document.getElementById('painelBtnChat').addEventListener('click', () => {
+            alternarPainel();
+            mensagemInput.focus();
+        });
+
+        document.getElementById('painelBtnSair').addEventListener('click', () => {
+            window.location.href = 'index.html';
+        });
 
         menuTelaFlutuante.addEventListener('click', () => {
             fecharMenu();
@@ -948,13 +952,26 @@
             alert('❌ Chamada recusada');
         });
 
+        function gerarIniciais(nome) {
+            if (!nome) return '👤';
+            const partes = nome.trim().split(/\s+/);
+            if (partes.length === 1) return partes[0].charAt(0).toUpperCase();
+            return (partes[0].charAt(0) + partes[partes.length - 1].charAt(0)).toUpperCase();
+        }
+
         // === FUNÇÃO PARA ABRIR CONVERSA DE UM CONTATO ===
-        window.abrirConversa = function(nome) {
-            const dados = dadosContatos[nome];
-            if (!dados) return;
+        window.abrirConversa = function(nome, outroId = null) {
+            if (!nome) return;
+
+            const dados = dadosContatos[nome] || {
+                avatar: gerarIniciais(nome),
+                status: 'online',
+                textoStatus: '● Disponível'
+            };
 
             fecharMenu();
             contatoAtual = nome;
+            contatoAtualId = outroId;
 
             perfilAvatar.innerHTML = `${dados.avatar}<div class="status-indicador ${dados.status}" id="statusIndicador"></div>`;
             perfilNome.textContent = nome;
@@ -964,6 +981,21 @@
             buscaInput.value = '';
             carregarMensagens();
         };
+
+        // === ABRIR CONTATO VINDO DE contato.html ===
+        window.addEventListener('load', () => {
+            const parametros = new URLSearchParams(window.location.search);
+            const nomeParam = parametros.get('conversa') || parametros.get('contato');
+            const nomeStorage = localStorage.getItem('conversaContatoNome');
+            const idStorage = localStorage.getItem('conversaContatoId');
+
+            const nomeContato = nomeParam || nomeStorage;
+            if (nomeContato) {
+                window.abrirConversa(nomeContato, idStorage || null);
+                localStorage.removeItem('conversaContatoNome');
+                localStorage.removeItem('conversaContatoId');
+            }
+        });
 
         // === BUSCAR MENSAGENS ===
         buscaInput.addEventListener('input', () => {
