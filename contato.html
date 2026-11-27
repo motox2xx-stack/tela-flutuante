@@ -469,8 +469,8 @@
     <div class="modal-fundo" id="modalAdicionar">
         <div class="modal">
             <h3>➕ Enviar Solicitação de Amizade</h3>
-            <label>Nome ou E-mail da pessoa</label>
-            <input type="text" id="buscarUsuario" placeholder="Digite o nome ou e-mail...">
+            <label>Nome da pessoa</label>
+            <input type="text" id="buscarUsuario" placeholder="Digite o nome...">
             <div class="procurando" id="procurando">🔍 Pesquisando...</div>
             <div class="erro-busca" id="erroBusca"></div>
             <div class="resultado-busca" id="resultadoBusca"></div>
@@ -1019,6 +1019,12 @@
                 carregarListaContatos();
             }
         }
+
+        window.abrirConversaComContato = function(nomeContato, outroId) {
+            localStorage.setItem('conversaContatoNome', nomeContato);
+            localStorage.setItem('conversaContatoId', outroId);
+            window.location.href = 'principal.html?conversa=' + encodeURIComponent(nomeContato);
+        };
 
         inicializar();
     </script>
