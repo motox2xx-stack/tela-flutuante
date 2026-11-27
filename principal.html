@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Guardian Shield — Início</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+    <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -818,23 +820,20 @@
         const canalFlutuante = new BroadcastChannel('gs_sincronizacao');
         let janelaFlutuanteAberta = null;
 
-        // Avisa a flutuante quando há mensagem nova
         function avisarFlutuante(tipo, dados) {
             if (janelaFlutuanteAberta && !janelaFlutuanteAberta.closed) {
                 canalFlutuante.postMessage({ tipo, dados, origem: 'principal' });
             }
         }
 
-        // Recebe da flutuante
         canalFlutuante.onmessage = (evento) => {
-            if (evento.data.origem === 'flutuante') return;
+            if (!evento.data || evento.data.origem === 'flutuante') return;
             const { tipo, dados } = evento.data;
             if (tipo === 'nova_mensagem') {
                 adicionarMensagemRecebida(dados.texto, dados.hora, dados.remetente);
             }
         };
 
-        // Fecha a flutuante automaticamente quando fechar a principal
         window.addEventListener('beforeunload', () => {
             if (janelaFlutuanteAberta && !janelaFlutuanteAberta.closed) {
                 janelaFlutuanteAberta.close();
@@ -1070,7 +1069,7 @@
             mensagemInput.focus();
         }
 
-        // === ADICIONAR MENSAGEM RECEBIDA (TELA FLUTUANTE / EXTERNA) ===
+        // === ADICIONAR MENSAGEM RECEBIDA (TELA FLUTUANTE / P2P / SUPABASE) ===
         function adicionarMensagemRecebida(texto, hora, remetente) {
             const alvoConversa = contatoAtual || remetente || 'Amigo';
             const horaFormatada = hora || new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
@@ -1104,11 +1103,13 @@
             vincularMenuMensagem(msgWrapper);
         }
 
-        // === ENVIAR MENSAGEM ===
-        function enviarMensagem() {
-            const texto = mensagemInput.value.trim();
-            if (!texto && !mensagemParaCitar) return;
-            if (!contatoAtual) {
+        // ==========================================
+        // 📤 ENVIAR MENSAGEM — P2P + SUPABASE JUNTOS
+        // ==========================================
+        async function enviarMensagemHibrida(texto, de, para) {
+            const textoLimpo = (texto || '').trim();
+            if (!textoLimpo && !mensagemParaCitar) return;
+            if (!para) {
                 alert('👥 Primeiro escolha um contato no menu ☰ → Contatos!');
                 return;
             }
@@ -1120,54 +1121,130 @@
             buscaInput.value = '';
 
             const agora = new Date();
-            const hora = agora.getHours().toString().padStart(2, '0') + ':' + agora.getMinutes().toString().padStart(2, '0');
-            const textoFinal = texto || '(mensagem vazia)';
+            const hora = agora.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+            const remetente = de || localStorage.getItem('guardian_shield_nome') || 'Eu';
+            const textoFinal = textoLimpo || '(mensagem vazia)';
+            const citacaoAtual = mensagemParaCitar;
 
-            const msgWrapper = document.createElement('div');
-            msgWrapper.className = 'mensagem enviada';
+            // 1️⃣ Envia pela conexão P2P — chega NA HORA ⚡
+            if (typeof peerConnection !== 'undefined' && peerConnection && peerConnection.open) {
+                peerConnection.send({
+                    tipo: 'mensagem',
+                    texto: textoFinal,
+                    citou: citacaoAtual,
+                    de: remetente,
+                    para: para,
+                    hora: hora
+                });
+            }
 
-            const conteudoCitado = mensagemParaCitar
-                ? `<div class="mensagem-citada">${mensagemParaCitar}</div>`
-                : '';
+            // 2️⃣ Salva no Supabase — fica guardado 💾
+            if (typeof supabase !== 'undefined' && supabase && typeof supabase.from === 'function') {
+                await supabase.from('mensagens').insert({
+                    de: remetente,
+                    para: para,
+                    texto: textoFinal,
+                    hora: agora.toISOString()
+                });
+            }
 
-            msgWrapper.innerHTML = `
-                ${conteudoCitado}
-                <div class="texto-mensagem">${textoFinal}</div>
-                <div class="hora">${hora} ✓✓</div>
-                <span class="mensagem-mais">⋯</span>
-                <div class="menu-mensagem-acoes">
-                    <div class="menu-mensagem-item" data-acao="copiar">📋 Copiar</div>
-                    <div class="menu-mensagem-item" data-acao="responder">↩️ Responder</div>
-                </div>
-            `;
-            chatArea.appendChild(msgWrapper);
-
-            salvarMensagem(contatoAtual, {
+            salvarMensagem(para, {
                 tipo: 'enviada',
                 texto: textoFinal,
-                citou: mensagemParaCitar,
+                citou: citacaoAtual,
                 hora: hora
             });
+
+            if (contatoAtual === para) {
+                const conteudoCitado = citacaoAtual
+                    ? `<div class="mensagem-citada">${citacaoAtual}</div>`
+                    : '';
+
+                const msgWrapper = document.createElement('div');
+                msgWrapper.className = 'mensagem enviada';
+                msgWrapper.innerHTML = `
+                    ${conteudoCitado}
+                    <div class="texto-mensagem">${textoFinal}</div>
+                    <div class="hora">${hora} ✓✓</div>
+                    <span class="mensagem-mais">⋯</span>
+                    <div class="menu-mensagem-acoes">
+                        <div class="menu-mensagem-item" data-acao="copiar">📋 Copiar</div>
+                        <div class="menu-mensagem-item" data-acao="responder">↩️ Responder</div>
+                    </div>
+                `;
+                chatArea.appendChild(msgWrapper);
+                chatArea.scrollTop = chatArea.scrollHeight;
+                vincularMenuMensagem(msgWrapper);
+            }
 
             avisarFlutuante('nova_mensagem', {
                 texto: textoFinal,
                 hora: hora,
-                remetente: perfilNome.textContent
+                remetente: remetente
             });
 
-            mensagemInput.value = '';
             respostaCitada.classList.remove('ativo');
             mensagemParaCitar = null;
             textoCitado.textContent = '';
-            chatArea.scrollTop = chatArea.scrollHeight;
-
-            vincularMenuMensagem(msgWrapper);
         }
 
-        btnEnviar.addEventListener('click', enviarMensagem);
+        function dispararEnvioHibrido() {
+            const texto = mensagemInput.value;
+            const remetente = localStorage.getItem('guardian_shield_nome') || 'Eu';
+            enviarMensagemHibrida(texto, remetente, contatoAtual);
+            mensagemInput.value = '';
+        }
+
+        btnEnviar.addEventListener('click', dispararEnvioHibrido);
         mensagemInput.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') enviarMensagem();
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                dispararEnvioHibrido();
+            }
         });
+
+        // ==========================================
+        // 📥 RECEBER — P2P (chega rápido)
+        // ==========================================
+        if (typeof peerConnection !== 'undefined' && peerConnection) {
+            peerConnection.on('data', (dados) => {
+                if (dados && dados.tipo === 'mensagem') {
+                    adicionarMensagemRecebida(dados.texto, dados.hora, dados.de);
+
+                    if (janelaFlutuanteAberta && !janelaFlutuanteAberta.closed) {
+                        janelaFlutuanteAberta.postMessage({
+                            tipo: 'mensagem-nova',
+                            dados: { texto: dados.texto, de: dados.de, hora: dados.hora }
+                        }, window.location.origin);
+                    }
+                }
+            });
+        }
+
+        // ==========================================
+        // 📥 RECEBER — SUPABASE (garante histórico)
+        // ==========================================
+        const seuNomeUsuario = localStorage.getItem('guardian_shield_nome') || 'Eu';
+
+        if (typeof supabase !== 'undefined' && supabase && typeof supabase.channel === 'function') {
+            supabase.channel('novas_mensagens')
+                .on('INSERT', { table: 'mensagens' }, (payload) => {
+                    const horaFormatada = new Date(payload.new.hora)
+                        .toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+
+                    if (payload.new.de !== seuNomeUsuario) {
+                        adicionarMensagemRecebida(payload.new.texto, horaFormatada, payload.new.de);
+
+                        if (janelaFlutuanteAberta && !janelaFlutuanteAberta.closed) {
+                            janelaFlutuanteAberta.postMessage({
+                                tipo: 'mensagem-nova',
+                                dados: { texto: payload.new.texto, de: payload.new.de, hora: horaFormatada }
+                            }, window.location.origin);
+                        }
+                    }
+                })
+                .subscribe();
+        }
 
         // === SALVAR E CARREGAR MENSAGENS ===
         function salvarMensagem(contato, dados) {
